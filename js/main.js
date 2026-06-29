@@ -11,28 +11,51 @@ const articles = [
     {
         id: '2026-06-29-renzhi',
         date: '2026-06-29',
-        title: '认知笔记#1：结构性行情中的方向判断——去伪存真、主线思维、卖在一致',
+        title: '「去伪存真」结构性行情中，资金从高位概念炒作向硬核科技迁移的逻辑',
         desc: '从今日盘面提炼五条核心认知：去伪存真（资金从概念到硬核的迁移逻辑）、主线的力量（暴跌抗跌反弹领涨）、方向>择时（选对方向个股自然跟涨）、卖在一致（极度超买纪律性减仓）、窗口期思维（理解参与者约束条件）。',
         tags: ['认知笔记', '方向判断', '结构性行情', '去伪存真', '卖在一致', '主线思维'],
         category: '认知笔记'
     }
 ];
 
+// 获取当前分类（从 URL 参数 ?category=xxx）
+function getCurrentCategory() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('category') || '';
+}
+
+// 分类名称映射
+const categoryMeta = {
+    '每日复盘': { icon: '📊', label: '每日复盘' },
+    '认知笔记': { icon: '💡', label: '认知笔记' },
+    '投资学习': { icon: '📖', label: '投资学习' }
+};
+
 // 渲染文章列表
 function renderArticleList() {
     const container = document.getElementById('articles-container');
+    const sectionTitle = document.getElementById('section-title');
     if (!container) return;
 
-    if (articles.length === 0) {
+    const category = getCurrentCategory();
+    const filtered = category ? articles.filter(a => a.category === category) : articles;
+
+    // 更新标题
+    if (sectionTitle) {
+        const meta = categoryMeta[category];
+        sectionTitle.textContent = meta ? `${meta.icon} ${meta.label}` : '📋 全部文章';
+    }
+
+    if (filtered.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="icon">📝</div>
-                <p>还没有文章，复盘内容即将上线...</p>
+                <p>该分类下还没有文章，敬请期待...</p>
             </div>`;
         return;
     }
 
-    container.innerHTML = articles.map(a => `
+    container.innerHTML = filtered.map(a => `
         <a href="posts/${a.id}.html" class="article-card">
             <div class="card-meta">
                 <span class="card-date">${a.date}</span>
@@ -44,13 +67,32 @@ function renderArticleList() {
     `).join('');
 }
 
+// 高亮当前导航
+function highlightNav() {
+    const category = getCurrentCategory();
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    if (!category) {
+        // 全部文章
+        const allLink = document.querySelector('.nav-link[data-category=""]');
+        if (allLink) allLink.classList.add('active');
+    } else {
+        const catLink = document.querySelector(`.nav-link[data-category="${category}"]`);
+        if (catLink) catLink.classList.add('active');
+    }
+}
+
 // 渲染标签云
 function renderTagCloud() {
     const cloud = document.getElementById('tag-cloud');
     if (!cloud) return;
 
+    const category = getCurrentCategory();
+    const source = category ? articles.filter(a => a.category === category) : articles;
+
     const tagCount = {};
-    articles.forEach(a => {
+    source.forEach(a => {
         a.tags.forEach(t => {
             tagCount[t] = (tagCount[t] || 0) + 1;
         });
@@ -66,8 +108,11 @@ function renderArchive() {
     const list = document.getElementById('archive-list');
     if (!list) return;
 
+    const category = getCurrentCategory();
+    const source = category ? articles.filter(a => a.category === category) : articles;
+
     const monthCount = {};
-    articles.forEach(a => {
+    source.forEach(a => {
         const month = a.date.substring(0, 7);
         monthCount[month] = (monthCount[month] || 0) + 1;
     });
@@ -81,6 +126,7 @@ function renderArchive() {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    highlightNav();
     renderArticleList();
     renderTagCloud();
     renderArchive();

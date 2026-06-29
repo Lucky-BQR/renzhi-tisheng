@@ -24,10 +24,10 @@
 
     <nav class="site-nav">
         <div class="container">
-            <a href="index.html" class="nav-link active">📋 全部文章</a>
-            <a href="#" class="nav-link">📊 每日复盘</a>
-            <a href="#" class="nav-link">📖 投资学习</a>
-            <a href="posts/2026-06-29-renzhi.html" class="nav-link">💡 认知笔记</a>
+            <a href="index.html" class="nav-link" data-category="">📋 全部文章</a>
+            <a href="index.html?category=每日复盘" class="nav-link" data-category="每日复盘">📊 每日复盘</a>
+            <a href="index.html?category=投资学习" class="nav-link" data-category="投资学习">📖 投资学习</a>
+            <a href="index.html?category=认知笔记" class="nav-link" data-category="认知笔记">💡 认知笔记</a>
             <a href="#" class="nav-link">🔭 关于</a>
         </div>
     </nav>
@@ -36,7 +36,7 @@
         <div class="content-layout">
             <!-- 文章列表 -->
             <section class="article-list" id="article-list">
-                <h2 class="section-title">📋 全部文章</h2>
+                <h2 class="section-title" id="section-title">📋 全部文章</h2>
                 <div class="articles" id="articles-container">
                     <!-- JS 动态渲染 -->
                 </div>
