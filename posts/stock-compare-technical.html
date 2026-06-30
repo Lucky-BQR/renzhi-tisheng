@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五只股票技术指标综合评分与中长期走势分析 · 认知提升</title>
+    <meta name="description" content="京东方A、立昂微、圣晖集成、斯达半导、泰和新材五只股票技术指标综合评分：MACD/KDJ/RSI/均线/趋势信号加权评分，中长期走势分析。">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .highlight-box { background: var(--accent-glow); border-left: 3px solid var(--accent); padding: 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 16px 0; }
+        .danger-box { background: rgba(248, 113, 113, 0.1); border-left: 3px solid var(--red); padding: 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 16px 0; }
+        .record-box { background: rgba(74, 222, 128, 0.08); border-left: 3px solid var(--green); padding: 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 16px 0; }
+        .score-bar { height: 8px; border-radius: 4px; background: var(--bg-hover); margin: 4px 0; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 4px; }
+        .score-high { background: var(--green); }
+        .score-mid { background: var(--orange); }
+        .score-low { background: var(--red); }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="site-title"><span class="icon">📈</span>认知提升</h1>
+                <p class="site-subtitle">每日复盘 · 投资思考 · 认知迭代</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="site-nav">
+        <div class="container">
+            <a href="../index.html" class="nav-link">📋 全部文章</a>
+            <a href="../index.html?category=每日复盘" class="nav-link">📊 每日复盘</a>
+            <a href="../index.html?category=投资学习" class="nav-link">📖 投资学习</a>
+            <a href="../index.html?category=认知笔记" class="nav-link">💡 认知笔记</a>
+            <a href="../index.html?category=股票分析" class="nav-link active">📈 股票分析</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <article class="article-detail">
+            <a href="../index.html?category=股票分析" class="back-home">← 返回股票分析列表</a>
+
+            <header class="article-header">
+                <div class="article-date">2026年6月29日 · 开盘5分钟数据</div>
+                <h1>五只股票技术指标综合评分与中长期走势分析</h1>
+                <div class="article-tags">
+                    <span>股票分析</span><span>技术指标</span><span>综合评分</span><span>走势分析</span><span>横向对比</span>
+                </div>
+            </header>
+
+            <div class="article-body">
+
+<h2>一、今日实时行情总览（6/29 09:35）</h2>
+
+<table>
+    <tr><th>代码</th><th>股票</th><th>现价</th><th>涨跌幅</th><th>今开</th><th>最高</th><th>最低</th><th>昨收</th><th>盘中振幅</th></tr>
+    <tr><td>000725</td><td><strong>京东方A</strong></td><td>¥7.88</td><td><span class="up">+1.16% 🟢</span></td><td>7.96</td><td>8.15</td><td>7.71</td><td>7.79</td><td>5.65%</td></tr>
+    <tr><td>605358</td><td><strong>立昂微</strong></td><td>¥76.45</td><td><span class="up">+1.43% 🟢</span></td><td>77.00</td><td>77.57</td><td>74.08</td><td>75.37</td><td>4.63%</td></tr>
+    <tr><td>603163</td><td><strong>圣晖集成</strong></td><td>¥140.80</td><td><span class="up">+3.85% 🟢</span></td><td>140.30</td><td>144.24</td><td>134.97</td><td>135.58</td><td>6.84%</td></tr>
+    <tr><td>603290</td><td><strong>斯达半导</strong></td><td>¥139.64</td><td><span class="up">+4.32% 🟢</span></td><td>139.89</td><td>142.99</td><td>139.50</td><td>133.86</td><td>2.61%</td></tr>
+    <tr><td>002254</td><td><strong>泰和新材</strong></td><td>¥18.53</td><td><span class="down">-4.24% 🔴</span></td><td>19.25</td><td>19.40</td><td>18.50</td><td>19.35</td><td>4.65%</td></tr>
+</table>
+
+<div class="highlight-box">
+💡 泰和新材是今日唯一下跌的票，低开低走，典型"涨停次日回调"规律兑现。
+</div>
+
+<h2>二、技术指标综合评分卡</h2>
+
+<h3>评分体系说明</h3>
+
+<table>
+    <tr><th>维度</th><th>权重</th><th>评分逻辑</th></tr>
+    <tr><td><strong>趋势信号</strong></td><td>30%</td><td>趋势分（均线多头+2/MACD金叉+2/站上MA20+1）归一化</td></tr>
+    <tr><td><strong>KDJ-J值</strong></td><td>20%</td><td>J值&lt;60=满分 / 60~80=80分 / 80~100=60分 / &gt;100=30分</td></tr>
+    <tr><td><strong>RSI6</strong></td><td>20%</td><td>RSI&lt;50=满分 / 50~70=80分 / 70~80=60分 / &gt;80=30分</td></tr>
+    <tr><td><strong>成交量</strong></td><td>15%</td><td>量比1~2=满分 / 0.5~1=70分 / &gt;3=60分</td></tr>
+    <tr><td><strong>今日涨跌</strong></td><td>15%</td><td>+2%~+5%=满分 / &gt;+5%=70分 / 0~2%=80分</td></tr>
+</table>
+
+<h3>综合评分结果</h3>
+
+<table>
+    <tr><th>股票</th><th>趋势(30%)</th><th>KDJ(20%)</th><th>RSI(20%)</th><th>量能(15%)</th><th>涨跌(15%)</th><th>总分</th><th>等级</th></tr>
+    <tr><td><strong>京东方A</strong></td><td>30</td><td>12</td><td>12</td><td>15</td><td>12</td><td><strong>81</strong></td><td>🟢 A</td></tr>
+    <tr><td><strong>立昂微</strong></td><td>30</td><td>6</td><td>12</td><td>12</td><td>12</td><td><strong>72</strong></td><td>🟡 B</td></tr>
+    <tr><td><strong>圣晖集成</strong></td><td>30</td><td>6</td><td>6</td><td>10</td><td>15</td><td><strong>67</strong></td><td>🟡 B</td></tr>
+    <tr><td><strong>斯达半导</strong></td><td>30</td><td>16</td><td>16</td><td>10</td><td>15</td><td><strong>87</strong></td><td>🟢 A</td></tr>
+    <tr><td><strong>泰和新材</strong></td><td>30</td><td>12</td><td>12</td><td>9</td><td>6</td><td><strong>69</strong></td><td>🟡 B</td></tr>
+</table>
+
+<div class="record-box">
+<strong>🏆 技术指标综合排名：</strong><br>
+🥇 <strong>斯达半导 87分</strong> — 趋势最强+KDJ/RSI健康+今日领涨<br>
+🥈 <strong>京东方A 81分</strong> — 均线多头+量能完美+稳健跟涨<br>
+🥉 <strong>立昂微 72分</strong> — 趋势极强但KDJ超买拉低评分<br>
+4. <strong>泰和新材 69分</strong> — 趋势好但涨停次日回调<br>
+5. <strong>圣晖集成 67分</strong> — 趋势最强但极度超买拉低评分
+</div>
+
+<h2>三、中长期走势分析</h2>
+
+<h3>走势定性</h3>
+
+<table>
+    <tr><th>股票</th><th>中期趋势</th><th>短期风险</th><th>核心判断</th></tr>
+    <tr><td><strong>京东方A</strong></td><td><span class="up">均线多头排列，趋势向上</span></td><td>KDJ超买，短期可能回调</td><td>趋势良好，逢回调关注</td></tr>
+    <tr><td><strong>立昂微</strong></td><td><span class="up">硅片涨价催化，趋势极强</span></td><td><span class="fire">J值>100超买</span></td><td>核心逻辑确定，持有为主</td></tr>
+    <tr><td><strong>圣晖集成</strong></td><td><span class="up">连续涨停，趋势最强</span></td><td><span class="fire">⚠️ 极度超买，建议减仓</span></td><td>趋势强但风险累积</td></tr>
+    <tr><td><strong>斯达半导</strong></td><td><span class="up">均线多头，温和上涨</span></td><td>一季报业绩承压</td><td>趋势+指标最健康</td></tr>
+    <tr><td><strong>泰和新材</strong></td><td><span class="up">均线多头未破</span></td><td><span class="down">涨停次日回调</span></td><td>等待缩量企稳</td></tr>
+</table>
+
+<div class="highlight-box">
+<strong>📊 核心结论：</strong>五只股票均处于中期上涨趋势（均线多头排列），但短期分化明显——斯达半导指标最健康（87分），圣晖集成极度超买需警惕。技术面最佳选择是<strong>斯达半导</strong>（趋势+指标双优），基本面催化最强的是<strong>立昂微</strong>（硅片涨价）。投资决策需要综合技术面+基本面+市场情绪三维判断。
+</div>
+
+            </div>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2026 认知提升 · 投资有风险，入市需谨慎 · 本站内容仅为个人学习记录，不构成投资建议</p>
+            <p class="footer-quote">"投资本质上是认知的变现"</p>
+        </div>
+    </footer>
+</body>
+</html>
