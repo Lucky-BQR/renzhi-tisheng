@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 集合竞价看盘框架：从9:15到9:25的实战拆解 · 认知提升</title>
+    <meta name="description" content="集合竞价四步法完整教学：三个关键时间段、委比委差判断、竞价轨迹解读、开盘价确认。附2026年7月1日四只持仓实战案例拆解。">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .insight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .insight-card h3 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 1.15rem;
+        }
+        .insight-card .tag-row {
+            margin-bottom: 12px;
+        }
+        .insight-card .tag-row span {
+            display: inline-block;
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 6px;
+        }
+        .insight-card ul {
+            padding-left: 20px;
+        }
+        .insight-card li {
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .principle {
+            background: var(--accent-glow);
+            border-left: 3px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin: 20px 0;
+            font-size: 1.05rem;
+        }
+        .principle strong {
+            color: var(--accent);
+        }
+        .step-box {
+            background: var(--bg-hover);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .step-box h4 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 1.05rem;
+        }
+        .step-box table {
+            font-size: 0.92rem;
+        }
+        .case-card {
+            border-left: 4px solid var(--accent);
+            padding-left: 16px;
+            margin: 20px 0;
+        }
+        .case-card.green { border-left-color: #22c55e; }
+        .case-card.red { border-left-color: #ef4444; }
+        .case-card.yellow { border-left-color: #f59e0b; }
+        .case-card.gray { border-left-color: #6b7280; }
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+            margin: 16px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 12px;
+            padding-left: 16px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+        .timeline-item.fake::before { background: #ef4444; }
+        .timeline-item.real::before { background: #22c55e; }
+        .timeline-item.result::before { background: #f59e0b; }
+        .koudai {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1a1a2e;
+            color: #22c55e;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        .price-up { color: #ef4444; font-weight: 600; }
+        .price-down { color: #22c55e; font-weight: 600; }
+        .price-flat { color: var(--text-secondary); }
+        .data-source {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .signal-bull { color: #ef4444; }
+        .signal-bear { color: #22c55e; }
+        .signal-neut { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="site-title"><span class="icon">📈</span>认知提升</h1>
+                <p class="site-subtitle">每日复盘 · 投资思考 · 认知迭代</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="site-nav">
+        <div class="container">
+            <a href="../index.html" class="nav-link">📋 全部文章</a>
+            <a href="../index.html?category=每日复盘" class="nav-link">📊 每日复盘</a>
+            <a href="../index.html?category=投资学习" class="nav-link">📖 投资学习</a>
+            <a href="../index.html?category=认知笔记" class="nav-link active">💡 认知笔记</a>
+            <a href="../index.html?category=股票分析" class="nav-link">📈 股票分析</a>
+            <a href="../index.html?category=行业分析" class="nav-link">🏭 行业分析</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <article class="article-detail">
+            <a href="../index.html" class="back-home">← 返回文章列表</a>
+
+            <header class="article-header">
+                <div class="article-date">2026年7月1日 · 周三 · 投资学习 #2</div>
+                <h1>📖 集合竞价看盘框架：从9:15到9:25的实战拆解</h1>
+                <div class="article-tags">
+                    <span>投资学习</span><span>集合竞价</span><span>看盘技巧</span><span>委比委差</span><span>实战案例</span><span>入门</span>
+                </div>
+            </header>
+
+            <div class="article-body">
+
+<p>集合竞价是每天开盘前最重要的10分钟。很多新手只看9:25的开盘价，却错过了9:15-9:25之间大量有价值的信息。本文用2026年7月1日四只持仓的真实竞价数据，系统拆解竞价看盘方法。</p>
+
+<!-- ============================================================ -->
+<h2>一、竞价的三个关键时间段</h2>
+
+<div class="insight-card">
+    <div class="tag-row"><span>基础框架</span><span>时间划分</span></div>
+    <h3>9:15—9:20—9:25，每个阶段含义完全不同</h3>
+
+    <div class="timeline">
+        <div class="timeline-item fake">
+            <strong>9:15-9:20 · 可撤单阶段</strong>
+            <p>可以挂单也可以撤单。这个阶段看到的涨停竞价、天量大单，<strong>可能是假的</strong>——主力可以挂大单营造假象，9:20前撤掉。</p>
+            <p>👀 <strong>看方向，别信价格。</strong></p>
+        </div>
+        <div class="timeline-item real">
+            <strong>9:20-9:25 · 不可撤单阶段</strong>
+            <p>挂单不能撤，<strong>真金白银的博弈</strong>。这个阶段的撮合价和委比委差才有参考价值。</p>
+            <p>🎯 <strong>这才是真正有效的竞价信息。</strong></p>
+        </div>
+        <div class="timeline-item result">
+            <strong>9:25 · 出开盘价</strong>
+            <p>撮合系统给出最终开盘价和成交量。这是竞价博弈的<strong>最终裁判结果</strong>。</p>
+            <p>✅ <strong>对比9:20的竞价价和9:25的开盘价，差距越大说明变数越大。</strong></p>
+        </div>
+    </div>
+</div>
+
+<div class="principle">
+    <strong>🧠 核心认知：</strong>9:15-9:20的价格是"故事"，9:20-9:25的价格是"事实"，9:25的开盘价是"判决"。三个阶段的信息权重完全不同。
+</div>
+
+<!-- ============================================================ -->
+<h2>二、竞价看什么：价格、委比、成交量</h2>
+
+<div class="step-box">
+    <h4>📊 三个核心指标</h4>
+    <table>
+        <tr><th>指标</th><th>含义</th><th>怎么看</th></tr>
+        <tr>
+            <td><strong>撮合价</strong></td>
+            <td>当前时刻的集合竞价撮合价格</td>
+            <td>与昨收对比看方向；9:20-9:25之间看走势（持续走高=多头强，持续走低=空头强）</td>
+        </tr>
+        <tr>
+            <td><strong>委比 / 委差</strong></td>
+            <td>委比=(买盘-卖盘)/(买盘+卖盘)；委差=买盘-卖盘</td>
+            <td>委比>+20%=真买盘堆积，<-20%=真卖盘堆积，接近0%=多空平衡</td>
+        </tr>
+        <tr>
+            <td><strong>撮合量</strong></td>
+            <td>参与竞价的委托总量</td>
+            <td>量大=参与度高，量小=观望；对比9:15和9:25的增量</td>
+        </tr>
+    </table>
+</div>
+
+<div class="principle">
+    <strong>🧠 核心认知：</strong>价格告诉你"多空在什么位置博弈"，委比告诉你"谁的力量更强"，成交量告诉你"有多少人在参与"。三个指标要一起看，不能只看价格。
+</div>
+
+<!-- ============================================================ -->
+<h2>三、竞价快速判断口诀</h2>
+
+<div class="insight-card">
+    <div class="tag-row"><span>实战口诀</span><span>快速判断</span></div>
+    <h3>六种典型竞价组合</h3>
+    <table>
+        <tr><th>价格</th><th>委比</th><th>成交量</th><th>信号</th><th>含义</th></tr>
+        <tr>
+            <td class="price-up">涨 ↑</td>
+            <td>正 +</td>
+            <td>放大</td>
+            <td class="signal-bull">🟢 强势</td>
+            <td>真买盘推动价格上涨，开盘大概率延续强势</td>
+        </tr>
+        <tr>
+            <td class="price-up">涨 ↑</td>
+            <td>负 -</td>
+            <td>放大</td>
+            <td class="signal-neut">🟡 分歧</td>
+            <td>价格虽涨但卖盘更大，开盘可能回落</td>
+        </tr>
+        <tr>
+            <td class="price-flat">平 →</td>
+            <td>正 +</td>
+            <td>小</td>
+            <td class="signal-bull">🟢 蓄力</td>
+            <td>价格不动但买盘堆积，开盘后可能拉升</td>
+        </tr>
+        <tr>
+            <td class="price-flat">平 →</td>
+            <td>负 -</td>
+            <td>小</td>
+            <td class="signal-bear">🔴 蓄压</td>
+            <td>价格不动但卖盘堆积，开盘后可能下跌</td>
+        </tr>
+        <tr>
+            <td class="price-down">跌 ↓</td>
+            <td>负 -</td>
+            <td>放大</td>
+            <td class="signal-bear">🔴 弱势</td>
+            <td>真卖盘推动价格下跌，开盘大概率延续弱势</td>
+        </tr>
+        <tr>
+            <td class="price-down">跌 ↓</td>
+            <td>正 +</td>
+            <td>小</td>
+            <td class="signal-neut">🟡 托底</td>
+            <td>价格虽跌但有买盘托底，可能止跌</td>
+        </tr>
+    </table>
+</div>
+
+<div class="principle">
+    <strong>🧠 核心认知：</strong>价格涨不代表真的好，要看委比有没有配合。价格平不代表没方向，委比正=蓄力看涨，委比负=蓄力看跌。最后30秒的突变才是真方向！
+</div>
+
+<!-- ============================================================ -->
+<h2>四、竞价分析四步法</h2>
+
+<div class="step-box">
+    <h4>🕘 每天9:15-9:25，按这个顺序看</h4>
+
+    <table>
+        <tr><th>步骤</th><th>时间</th><th>看什么</th><th>怎么判断</th></tr>
+        <tr>
+            <td><strong>① 定方向</strong></td>
+            <td>9:15</td>
+            <td>竞价第一笔撮合价</td>
+            <td>高于昨收=偏多，低于昨收=偏空。但注意：这个阶段可以撤单，方向参考即可</td>
+        </tr>
+        <tr>
+            <td><strong>② 辨真假</strong></td>
+            <td>9:20</td>
+            <td>委比、委差</td>
+            <td>委比>+20%=真买盘；<-20%=真卖盘；接近0=博弈中。这是最关键的一步</td>
+        </tr>
+        <tr>
+            <td><strong>③ 看趋势</strong></td>
+            <td>9:20-9:25</td>
+            <td>撮合价变化轨迹</td>
+            <td>价格持续走高=多头渐强；持续走低=空头渐强；横盘=力量均衡。最后30秒突变最关键</td>
+        </tr>
+        <tr>
+            <td><strong>④ 定结果</strong></td>
+            <td>9:25</td>
+            <td>开盘价 + 开盘量</td>
+            <td>开盘价vs9:20竞价价差距大=方向突变；开盘量大=多空激烈；开盘量小=方向待定</td>
+        </tr>
+    </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>五、四只持仓实战案例拆解（2026年7月1日）</h2>
+
+<!-- --- 案例1：斯达半导 --- -->
+<h3>🔥 案例1：斯达半导 —— 「竞价虚单」教科书</h3>
+
+<div class="case-card red">
+    <h4>竞价轨迹</h4>
+    <div class="timeline">
+        <div class="timeline-item fake">
+            <span class="koudai">9:15:26</span> 撮合价 <strong>168.00</strong>（+9.90%）← 冲涨停！好猛？
+        </div>
+        <div class="timeline-item fake">
+            <span class="koudai">9:15:47</span> 撮合价 <strong>166.67</strong>（+8.98%）← 开始下滑
+        </div>
+        <div class="timeline-item real">
+            <span class="koudai">9:20后</span> 撮合价 <strong>166.67</strong> · 委比 <strong>-0.11%</strong> · 委差 <strong>-1手</strong>
+        </div>
+        <div class="timeline-item result">
+            <span class="koudai">9:25开盘</span> <strong>155.00</strong>（+1.35%）← 🚨 开盘大幅低于竞价！
+        </div>
+    </div>
+
+    <h4>拆解分析</h4>
+    <ul>
+        <li><strong>9:15-9:20：</strong>冲到168（涨停附近），但这是可撤单阶段，<strong>很可能是假单</strong></li>
+        <li><strong>9:20后：</strong>价格稳在166.67，<strong>但委比-0.11%、委差仅-1手</strong>——买卖力量完全对等，没有一边倒的买盘在顶竞价。如果真有+8.98%的真实买盘，委比至少应该+30%以上</li>
+        <li><strong>9:25开盘：</strong>155.00，仅+1.35%。<strong>真相大白</strong>——竞价高位单在9:20前撤掉了大部分</li>
+    </ul>
+
+    <div class="principle">
+        <strong>🧠 教训：</strong>高位竞价（+8%以上）+ 委比不配合（接近0）= 虚单概率大。真正的强势竞价，价格涨的同时委比一定大幅为正。委比是验真器。
+    </div>
+</div>
+
+<!-- --- 案例2：立昂微 --- -->
+<h3>🟢 案例2：立昂微 —— 「压价吸筹」教科书</h3>
+
+<div class="case-card green">
+    <h4>竞价数据</h4>
+    <table>
+        <tr><td>竞价全程撮合价</td><td><strong>77.61</strong>（昨收77.60，+0.01%）</td></tr>
+        <tr><td>价格走势</td><td>全程一字横盘，纹丝不动</td></tr>
+        <tr><td>委比</td><td class="signal-bull"><strong>+30.58%</strong></td></tr>
+        <tr><td>委差</td><td><strong>+436手</strong></td></tr>
+        <tr><td>买盘</td><td>495 + 436 = <strong>931手</strong></td></tr>
+        <tr><td>卖盘</td><td><strong>495手</strong></td></tr>
+        <tr><td>9:25开盘</td><td><strong>77.61</strong>（与竞价一致）</td></tr>
+    </table>
+
+    <h4>拆解分析</h4>
+    <ul>
+        <li>价格完全平开，但<strong>委比+30.58%</strong>！下方有436手买盘在排队等货</li>
+        <li>卖方只有495手，买方却有931手，<strong>买方力量几乎是卖方的2倍</strong></li>
+        <li>为什么价格不涨？因为卖方不降价，买方也不追高——双方在77.61形成僵持</li>
+        <li>这叫「压价吸筹」：<strong>主力悄悄堆积买单，但不主动推高价格</strong></li>
+        <li>当天立昂微涨价10-15%正式生效，委比+30%说明有资金提前埋伏</li>
+    </ul>
+
+    <div class="principle">
+        <strong>🧠 教训：</strong>价格不动不代表没方向！价格平 + 委比大幅为正 = 买盘蓄力，开盘后大概率拉升。价格平 + 委比大幅为负 = 卖盘蓄力，开盘后大概率下跌。委比比价格更诚实。
+    </div>
+</div>
+
+<!-- --- 案例3：京东方A --- -->
+<h3>🔴 案例3：京东方A —— 「竞价最后砸盘」教科书</h3>
+
+<div class="case-card red">
+    <h4>竞价轨迹</h4>
+    <div class="timeline">
+        <div class="timeline-item real">
+            <span class="koudai">9:23</span> 撮合价 <strong>8.70</strong>（+0.23%）· 委比 <strong>+7.01%</strong>
+        </div>
+        <div class="timeline-item real">
+            <span class="koudai">9:24:50-9:25:00</span> <strong>最后10秒大单砸出！</strong>撮合价从8.70→8.49
+        </div>
+        <div class="timeline-item result">
+            <span class="koudai">9:25开盘</span> <strong>8.49</strong>（<span class="price-down">-2.19%</span>）· 开盘量 <strong>82万手</strong>
+        </div>
+    </div>
+
+    <h4>拆解分析</h4>
+    <ul>
+        <li>9:23之前一切正常：+0.23%红盘，委比+7%买方略强</li>
+        <li><strong>9:24:50-9:25:00最后10秒突变！</strong>大单砸出，开盘价从8.70砸到8.49</li>
+        <li>开盘量82万手（约7亿元），量大——<strong>是真实砸盘，不是假动作</strong></li>
+        <li>背景：京东方A六连阳累涨+42%，获利盘在竞价最后时刻集中出货</li>
+    </ul>
+
+    <div class="principle">
+        <strong>🧠 教训：</strong>竞价最后30秒的突变，才是多空对决的真正结果。前面9:15-9:24的价格都可能被推翻。开盘量大+价格跳水=真实砸盘，开盘量小+价格跳水=可能是假摔。
+    </div>
+</div>
+
+<!-- --- 案例4：圣晖集成 --- -->
+<h3>⚪ 案例4：圣晖集成 —— 「试砸被拉回」教科书</h3>
+
+<div class="case-card gray">
+    <h4>竞价轨迹</h4>
+    <div class="timeline">
+        <div class="timeline-item fake">
+            <span class="koudai">9:15:06</span> 撮合价 <strong>146.50</strong>
+        </div>
+        <div class="timeline-item fake">
+            <span class="koudai">9:15:09</span> 撮合价 <strong>143.00</strong>（<span class="price-down">-2.39%</span>）← 有人用31手试砸！
+        </div>
+        <div class="timeline-item fake">
+            <span class="koudai">9:15:12</span> 撮合价 <strong>146.50</strong>（<span class="price-up">+2.39%</span>）← 瞬间拉回！57手
+        </div>
+        <div class="timeline-item real">
+            <span class="koudai">9:15-9:25</span> 全程稳在146.50 · 委比 <strong>+2.06%</strong>
+        </div>
+        <div class="timeline-item result">
+            <span class="koudai">9:25开盘</span> <strong>148.00</strong>（+1.02%）← 最后有资金推了一把
+        </div>
+    </div>
+
+    <h4>拆解分析</h4>
+    <ul>
+        <li>9:15:09有人用143.00试探性砸了31手，<strong>但3秒内被57手拉回146.50</strong></li>
+        <li>试砸被秒拉回 = <strong>下方有资金护盘</strong>，不是真砸盘</li>
+        <li>成交量很小（仅95手），竞价参与度低——主力没有大动作</li>
+        <li>开盘148.00（+1.02%），略超预期，说明最后有资金推了一把</li>
+    </ul>
+
+    <div class="principle">
+        <strong>🧠 教训：</strong>竞价中出现突然跳水但被瞬间拉回 = 下方有支撑，不是真砸盘。试砸被秒拉回说明有资金在防守。如果跳水后没有拉回，而是持续走低，那才是真砸盘。
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>六、四个案例综合对比</h2>
+
+<div class="insight-card">
+    <h3>2026年7月1日竞价复盘总表</h3>
+    <table>
+        <tr><th>股票</th><th>9:20竞价</th><th>委比</th><th>9:25开盘</th><th>竞价类型</th><th>学到的</th></tr>
+        <tr>
+            <td>斯达半导</td>
+            <td class="price-up">+8.98%</td>
+            <td>-0.11%</td>
+            <td class="price-up">+1.35%</td>
+            <td>竞价虚单</td>
+            <td>高位竞价+委比不配合=假强势</td>
+        </tr>
+        <tr>
+            <td>立昂微</td>
+            <td class="price-flat">+0.01%</td>
+            <td class="signal-bull">+30.58%</td>
+            <td class="price-flat">+0.01%</td>
+            <td>压价吸筹</td>
+            <td>价格不动+委比正=真蓄力</td>
+        </tr>
+        <tr>
+            <td>京东方A</td>
+            <td class="price-up">+0.23%</td>
+            <td>+7.01%</td>
+            <td class="price-down">-2.19%</td>
+            <td>最后砸盘</td>
+            <td>最后30秒定胜负</td>
+        </tr>
+        <tr>
+            <td>圣晖集成</td>
+            <td class="price-flat">0.00%</td>
+            <td>+2.06%</td>
+            <td class="price-up">+1.02%</td>
+            <td>试砸拉回</td>
+            <td>竞价跳水秒回=有支撑</td>
+        </tr>
+    </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>七、总结：竞价看盘检查清单</h2>
+
+<div class="insight-card">
+    <div class="tag-row"><span>检查清单</span><span>每日必看</span></div>
+    <h3>每天9:15-9:25，逐项检查</h3>
+    <table>
+        <tr><th>#</th><th>检查项</th><th>时间</th><th>判断标准</th></tr>
+        <tr><td>1</td><td>竞价方向</td><td>9:15</td><td>高于昨收=偏多，低于=偏空（参考即可）</td></tr>
+        <tr><td>2</td><td>委比验真</td><td>9:20</td><td>>+20%=真买盘，<-20%=真卖盘，接近0=博弈</td></tr>
+        <tr><td>3</td><td>竞价走势</td><td>9:20-9:25</td><td>持续走高=多头强，持续走低=空头强</td></tr>
+        <tr><td>4</td><td>最后30秒</td><td>9:24:30</td><td>是否有突变？有=多空方向可能有变</td></tr>
+        <tr><td>5</td><td>开盘确认</td><td>9:25</td><td>开盘价vs9:20竞价差距大=方向突变；开盘量大=多空激烈</td></tr>
+    </table>
+</div>
+
+<div class="principle">
+    <strong>🧠 最终心法：</strong>竞价看三样——价格、委比、成交量。价格涨+委比正+量放大=真强势；价格涨+委比负=虚单；价格平+委比正=蓄力；最后30秒突变=真方向。9:15-9:20的涨跌假动作多，9:20后的委比才是真金白银。
+</div>
+
+<div class="highlight-box">
+    <p><strong>竞价不是用来"预测"开盘价的，是用来"理解"多空博弈的。</strong></p>
+    <p>看懂竞价，就能在9:30正式交易前，比只看K线的人多10分钟的信息优势。</p>
+    <p>这10分钟，往往就是认知差距。</p>
+</div>
+
+<div class="data-source">
+    基于2026年7月1日集合竞价实战数据 · 四只持仓（斯达半导/立昂微/京东方A/圣晖集成）真实案例拆解 · 个人学习记录，不构成投资建议
+</div>
+
+            </div>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2026 认知提升 · 投资有风险，入市需谨慎 · 本站内容仅为个人学习记录，不构成投资建议</p>
+            <p class="footer-quote">"投资本质上是认知的变现"</p>
+        </div>
+    </footer>
+</body>
+</html>
