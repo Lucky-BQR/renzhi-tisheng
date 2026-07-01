@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 集合竞价看盘框架：从9:15到9:25的实战拆解 · 认知提升</title>
-    <meta name="description" content="集合竞价四步法完整教学：三个关键时间段、委比委差判断、竞价轨迹解读、开盘价确认。附2026年7月1日四只持仓实战案例拆解。">
+    <title>📖 集合竞价完全指南：从原理到实战的看盘框架 · 认知提升</title>
+    <meta name="description" content="集合竞价深度教学：撮合原理图解、三个关键时间段、委比委差详解、竞价轨迹四种经典形态、六种竞价组合快速判断、四步法检查清单。附2026年7月1日四只持仓实战案例拆解。">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        .insight-card {
+        /* ── 通用组件 ── */
+        .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 24px;
             margin: 24px 0;
         }
-        .insight-card h3 {
-            margin-top: 0;
-            color: var(--accent);
-            font-size: 1.15rem;
-        }
-        .insight-card .tag-row {
-            margin-bottom: 12px;
-        }
-        .insight-card .tag-row span {
+        .card h3, .card h4 { margin-top: 0; color: var(--accent); }
+        .card .badge-row { margin-bottom: 12px; }
+        .card .badge-row span {
             display: inline-block;
             background: var(--bg-hover);
             color: var(--text-secondary);
@@ -33,101 +28,89 @@
             font-size: 0.8rem;
             margin-right: 6px;
         }
-        .insight-card ul {
-            padding-left: 20px;
-        }
-        .insight-card li {
-            margin-bottom: 8px;
-            line-height: 1.7;
-        }
+        .card ul, .card ol { padding-left: 20px; }
+        .card li { margin-bottom: 8px; line-height: 1.7; }
+
         .principle {
             background: var(--accent-glow);
             border-left: 3px solid var(--accent);
             padding: 16px 20px;
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
             margin: 20px 0;
-            font-size: 1.05rem;
+            font-size: 1.02rem;
         }
-        .principle strong {
-            color: var(--accent);
-        }
-        .step-box {
-            background: var(--bg-hover);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin: 16px 0;
-        }
-        .step-box h4 {
-            margin-top: 0;
-            color: var(--accent);
-            font-size: 1.05rem;
-        }
-        .step-box table {
-            font-size: 0.92rem;
-        }
-        .case-card {
-            border-left: 4px solid var(--accent);
-            padding-left: 16px;
-            margin: 20px 0;
-        }
-        .case-card.green { border-left-color: #22c55e; }
-        .case-card.red { border-left-color: #ef4444; }
-        .case-card.yellow { border-left-color: #f59e0b; }
-        .case-card.gray { border-left-color: #6b7280; }
-        .timeline {
-            position: relative;
-            padding-left: 24px;
-            margin: 16px 0;
-        }
+        .principle strong { color: var(--accent); }
+
+        /* ── 颜色标记 ── */
+        .up { color: var(--red); font-weight: 600; }
+        .down { color: var(--green); font-weight: 600; }
+        .flat { color: var(--text-secondary); }
+        .bull { color: var(--red); }
+        .bear { color: var(--green); }
+        .warn { color: var(--orange); }
+
+        /* ── 时间线 ── */
+        .timeline { position: relative; padding-left: 32px; margin: 16px 0; }
         .timeline::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
+            content: ''; position: absolute; left: 14px; top: 4px; bottom: 4px;
+            width: 2px; background: var(--border);
         }
-        .timeline-item {
-            position: relative;
-            margin-bottom: 12px;
-            padding-left: 16px;
+        .tl-item { position: relative; margin-bottom: 14px; padding: 10px 14px;
+            background: var(--bg-hover); border-radius: var(--radius-sm); }
+        .tl-item::before {
+            content: ''; position: absolute; left: -24px; top: 14px;
+            width: 12px; height: 12px; border-radius: 50%;
         }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 6px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
+        .tl-fake::before { background: var(--orange); }
+        .tl-real::before { background: var(--green); }
+        .tl-result::before { background: var(--accent); }
+
+        /* ── 案例卡片 ── */
+        .case { border-left: 4px solid var(--accent); padding: 0 0 0 16px; margin: 24px 0; }
+        .case.green  { border-left-color: var(--green); }
+        .case.red    { border-left-color: var(--red); }
+        .case.yellow { border-left-color: var(--orange); }
+        .case.gray   { border-left-color: #6b7280; }
+        .case h4 { margin-top: 0; }
+
+        /* ── 步骤卡片 ── */
+        .step { background: var(--bg-hover); border-radius: var(--radius); padding: 20px; margin: 16px 0; }
+        .step h4 { margin-top: 0; color: var(--accent); }
+
+        /* ── SVG 图表容器 ── */
+        .chart-box {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            overflow-x: auto;
         }
-        .timeline-item.fake::before { background: #ef4444; }
-        .timeline-item.real::before { background: #22c55e; }
-        .timeline-item.result::before { background: #f59e0b; }
-        .koudai {
-            font-family: 'JetBrains Mono', monospace;
-            background: #1a1a2e;
-            color: #22c55e;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 0.9rem;
+        .chart-box .caption {
+            font-size: 0.82rem; color: var(--text-secondary); margin-top: 10px;
         }
-        .price-up { color: #ef4444; font-weight: 600; }
-        .price-down { color: #22c55e; font-weight: 600; }
-        .price-flat { color: var(--text-secondary); }
-        .data-source {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-align: right;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
+
+        /* ── 术语卡片 ── */
+        .term {
+            display: inline-block;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 14px;
+            margin: 4px;
+            font-size: 0.88rem;
         }
-        .signal-bull { color: #ef4444; }
-        .signal-bear { color: #22c55e; }
-        .signal-neut { color: #f59e0b; }
+        .term strong { color: var(--accent); }
+
+        /* ── 检查清单表格 ── */
+        .checklist td:first-child { text-align: center; font-weight: 700; width: 30px; }
+        .checklist td:nth-child(2) { font-weight: 600; }
+
+        /* ── 响应式 ── */
+        @media (max-width: 768px) {
+            .chart-box svg { width: 100%; height: auto; }
+        }
     </style>
 </head>
 <body>
@@ -144,8 +127,8 @@
         <div class="container">
             <a href="../index.html" class="nav-link">📋 全部文章</a>
             <a href="../index.html?category=每日复盘" class="nav-link">📊 每日复盘</a>
-            <a href="../index.html?category=投资学习" class="nav-link">📖 投资学习</a>
-            <a href="../index.html?category=认知笔记" class="nav-link active">💡 认知笔记</a>
+            <a href="../index.html?category=投资学习" class="nav-link active">📖 投资学习</a>
+            <a href="../index.html?category=认知笔记" class="nav-link">💡 认知笔记</a>
             <a href="../index.html?category=股票分析" class="nav-link">📈 股票分析</a>
             <a href="../index.html?category=行业分析" class="nav-link">🏭 行业分析</a>
         </div>
@@ -157,363 +140,806 @@
 
             <header class="article-header">
                 <div class="article-date">2026年7月1日 · 周三 · 投资学习 #2</div>
-                <h1>📖 集合竞价看盘框架：从9:15到9:25的实战拆解</h1>
+                <h1>📖 集合竞价完全指南：从原理到实战的看盘框架</h1>
                 <div class="article-tags">
-                    <span>投资学习</span><span>集合竞价</span><span>看盘技巧</span><span>委比委差</span><span>实战案例</span><span>入门</span>
+                    <span>投资学习</span><span>集合竞价</span><span>看盘技巧</span><span>委比委差</span><span>实战案例</span><span>入门</span><span>新手友好</span>
                 </div>
             </header>
 
             <div class="article-body">
 
-<p>集合竞价是每天开盘前最重要的10分钟。很多新手只看9:25的开盘价，却错过了9:15-9:25之间大量有价值的信息。本文用2026年7月1日四只持仓的真实竞价数据，系统拆解竞价看盘方法。</p>
+<!-- ============================================================ -->
+<!-- 引言 -->
+<!-- ============================================================ -->
+<p>每天早上9:15到9:25，A股有一场只有10分钟的「暗战」——<strong>集合竞价</strong>。这10分钟里，所有买单和卖单被汇总到一个池子里，由计算机撮合出一个<strong>让成交量最大化的价格</strong>。</p>
+
+<p>很多新手只看9:25的开盘价，却不知道9:15-9:25之间藏着大量信息——主力的意图、多空的力量、资金的流向，都能在竞价过程中读出来。</p>
+
+<p>本文从<strong>原理→框架→实战</strong>，用2026年7月1日的真实竞价数据，手把手教你学会看竞价。</p>
 
 <!-- ============================================================ -->
-<h2>一、竞价的三个关键时间段</h2>
+<!-- 第一章：竞价撮合原理 -->
+<!-- ============================================================ -->
+<h2>一、集合竞价是怎么撮合的？</h2>
 
-<div class="insight-card">
-    <div class="tag-row"><span>基础框架</span><span>时间划分</span></div>
-    <h3>9:15—9:20—9:25，每个阶段含义完全不同</h3>
+<p>理解竞价的第一步，是理解<strong>撮合原理</strong>。集合竞价不是"谁先挂单谁先成交"，而是所有委托汇总后，<strong>找一个让成交量最大的价格</strong>。</p>
 
-    <div class="timeline">
-        <div class="timeline-item fake">
-            <strong>9:15-9:20 · 可撤单阶段</strong>
-            <p>可以挂单也可以撤单。这个阶段看到的涨停竞价、天量大单，<strong>可能是假的</strong>——主力可以挂大单营造假象，9:20前撤掉。</p>
-            <p>👀 <strong>看方向，别信价格。</strong></p>
-        </div>
-        <div class="timeline-item real">
-            <strong>9:20-9:25 · 不可撤单阶段</strong>
-            <p>挂单不能撤，<strong>真金白银的博弈</strong>。这个阶段的撮合价和委比委差才有参考价值。</p>
-            <p>🎯 <strong>这才是真正有效的竞价信息。</strong></p>
-        </div>
-        <div class="timeline-item result">
-            <strong>9:25 · 出开盘价</strong>
-            <p>撮合系统给出最终开盘价和成交量。这是竞价博弈的<strong>最终裁判结果</strong>。</p>
-            <p>✅ <strong>对比9:20的竞价价和9:25的开盘价，差距越大说明变数越大。</strong></p>
-        </div>
-    </div>
+<div class="chart-box">
+    <svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1a1d27"/>
+                <stop offset="100%" stop-color="#0d1117"/>
+            </linearGradient>
+        </defs>
+        <rect width="720" height="400" rx="8" fill="url(#bgGrad)"/>
+
+        <!-- 标题 -->
+        <text x="360" y="30" text-anchor="middle" fill="#e1e4ea" font-size="16" font-weight="700">集合竞价撮合原理：最大成交量原则</text>
+
+        <!-- 买单区域（左侧） -->
+        <text x="130" y="70" text-anchor="middle" fill="#f87171" font-size="13" font-weight="600">🟢 买入委托（买单）</text>
+
+        <!-- 买单条 -->
+        <rect x="30" y="85" width="200" height="28" rx="4" fill="#1a3a2a" stroke="#22c55e" stroke-width="1"/>
+        <text x="40" y="104" fill="#22c55e" font-size="11">买三：10.00元 × 300手</text>
+        <rect x="30" y="118" width="200" height="28" rx="4" fill="#1a3a2a" stroke="#22c55e" stroke-width="1"/>
+        <text x="40" y="137" fill="#22c55e" font-size="11">买二：10.01元 × 500手</text>
+        <rect x="30" y="151" width="200" height="28" rx="4" fill="#1a4a2a" stroke="#34d399" stroke-width="1.5"/>
+        <text x="40" y="170" fill="#34d399" font-size="11">买一：10.02元 × 200手</text>
+
+        <!-- 中间撮合区 -->
+        <rect x="260" y="85" width="200" height="94" rx="8" fill="#1e2240" stroke="#4f8cff" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="360" y="110" text-anchor="middle" fill="#4f8cff" font-size="13" font-weight="700">撮合引擎</text>
+        <text x="360" y="135" text-anchor="middle" fill="#e1e4ea" font-size="11">算出成交量</text>
+        <text x="360" y="155" text-anchor="middle" fill="#e1e4ea" font-size="11">最大的价格</text>
+        <text x="360" y="175" text-anchor="middle" fill="#4f8cff" font-size="13" font-weight="700">→ 开盘价</text>
+
+        <!-- 卖单区域（右侧） -->
+        <text x="590" y="70" text-anchor="middle" fill="#22c55e" font-size="13" font-weight="600">🔴 卖出委托（卖单）</text>
+
+        <!-- 卖单条 -->
+        <rect x="490" y="85" width="200" height="28" rx="4" fill="#2a1a1a" stroke="#f87171" stroke-width="1"/>
+        <text x="500" y="104" fill="#f87171" font-size="11">卖一：10.02元 × 100手</text>
+        <rect x="490" y="118" width="200" height="28" rx="4" fill="#2a1a1a" stroke="#f87171" stroke-width="1"/>
+        <text x="500" y="137" fill="#f87171" font-size="11">卖二：10.03元 × 300手</text>
+        <rect x="490" y="151" width="200" height="28" rx="4" fill="#3a1a1a" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="500" y="170" fill="#ef4444" font-size="11">卖三：10.04元 × 500手</text>
+
+        <!-- 计算过程 -->
+        <text x="360" y="215" text-anchor="middle" fill="#8b8fa8" font-size="12">逐价计算可成交量：</text>
+
+        <rect x="50" y="230" width="620" height="28" rx="4" fill="#1a1d27"/>
+        <text x="60" y="249" fill="#e1e4ea" font-size="11">
+            <tspan fill="#22c55e">@10.00元：买单累计1000手</tspan>  vs  <tspan fill="#f87171">卖单累计900手</tspan>  →  可成交 <tspan fill="#fbbf24">900手</tspan>
+        </text>
+
+        <rect x="50" y="263" width="620" height="28" rx="4" fill="#1a1d27"/>
+        <text x="60" y="282" fill="#e1e4ea" font-size="11">
+            <tspan fill="#22c55e">@10.02元：买单累计700手</tspan>  vs  <tspan fill="#f87171">卖单累计400手</tspan>  →  可成交 <tspan fill="#fbbf24">400手</tspan>
+        </text>
+
+        <rect x="50" y="296" width="620" height="28" rx="4" fill="#1a1d27"/>
+        <text x="60" y="315" fill="#e1e4ea" font-size="11">
+            <tspan fill="#22c55e">@10.04元：买单累计200手</tspan>  vs  <tspan fill="#f87171">卖单累计900手</tspan>  →  可成交 <tspan fill="#fbbf24">200手</tspan>
+        </text>
+
+        <!-- 结论 -->
+        <rect x="120" y="340" width="480" height="40" rx="8" fill="#1e2240" stroke="#4f8cff" stroke-width="2"/>
+        <text x="360" y="366" text-anchor="middle" fill="#4f8cff" font-size="14" font-weight="700">
+            ✅ 最终开盘价 = 10.00元（成交量最大：900手）
+        </text>
+    </svg>
+    <div class="caption">图1：集合竞价撮合原理——计算机遍历所有可能价格，找到成交量最大的那个作为开盘价</div>
 </div>
 
 <div class="principle">
-    <strong>🧠 核心认知：</strong>9:15-9:20的价格是"故事"，9:20-9:25的价格是"事实"，9:25的开盘价是"判决"。三个阶段的信息权重完全不同。
+    <strong>🧠 核心原理：</strong>集合竞价不是"价高者得"的拍卖，而是<strong>最大成交量定价</strong>。系统把所有买单按价格从高到低排、卖单从低到高排，找到那个能让最多股票成交的价格。这个价格就是开盘价。
 </div>
 
-<!-- ============================================================ -->
-<h2>二、竞价看什么：价格、委比、成交量</h2>
+<p>理解了这个原理，就能明白为什么竞价过程中价格会不断变动——因为新的委托不断加入，最大成交量的价格也在实时变化。</p>
 
-<div class="step-box">
-    <h4>📊 三个核心指标</h4>
+<!-- ============================================================ -->
+<!-- 第二章：三个关键时间段 -->
+<!-- ============================================================ -->
+<h2>二、竞价的三个关键时间段</h2>
+
+<p>9:15到9:25这10分钟不是铁板一块，而是被一个关键节点——<strong>9:20</strong>——切成两段。9:20之前可以撤单，9:20之后不能撤单。这个差异至关重要。</p>
+
+<div class="chart-box">
+    <svg viewBox="0 0 720 220" width="720" height="220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="barGrad1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="barGrad2" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0.05"/>
+            </linearGradient>
+        </defs>
+        <rect width="720" height="220" rx="8" fill="#0d1117"/>
+
+        <!-- 时间轴 -->
+        <line x1="40" y1="40" x2="680" y2="40" stroke="#2a2d3a" stroke-width="2"/>
+        <text x="40" y="30" text-anchor="middle" fill="#8b8fa8" font-size="11">9:15</text>
+        <text x="360" y="30" text-anchor="middle" fill="#8b8fa8" font-size="11">9:20</text>
+        <text x="680" y="30" text-anchor="middle" fill="#8b8fa8" font-size="11">9:25</text>
+
+        <!-- 第一段：可撤单 -->
+        <rect x="40" y="50" width="320" height="80" rx="8" fill="url(#barGrad1)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="200" y="78" text-anchor="middle" fill="#fbbf24" font-size="15" font-weight="700">⚠️ 可撤单阶段</text>
+        <text x="200" y="100" text-anchor="middle" fill="#8b8fa8" font-size="11">挂单可以撤回 · 假单常见</text>
+        <text x="200" y="120" text-anchor="middle" fill="#fbbf24" font-size="11">看方向，别信价格！</text>
+
+        <!-- 第二段：不可撤单 -->
+        <rect x="360" y="50" width="320" height="80" rx="8" fill="url(#barGrad2)" stroke="#34d399" stroke-width="2"/>
+        <text x="520" y="78" text-anchor="middle" fill="#34d399" font-size="15" font-weight="700">🔒 不可撤单阶段</text>
+        <text x="520" y="100" text-anchor="middle" fill="#8b8fa8" font-size="11">挂单不能撤回 · 真金白银</text>
+        <text x="520" y="120" text-anchor="middle" fill="#34d399" font-size="11">这才是有价值的！</text>
+
+        <!-- 第三段：出结果 -->
+        <rect x="320" y="145" width="80" height="28" rx="14" fill="#1e2240" stroke="#4f8cff" stroke-width="2"/>
+        <text x="360" y="164" text-anchor="middle" fill="#4f8cff" font-size="12" font-weight="700">开盘价</text>
+
+        <!-- 注释 -->
+        <text x="680" y="190" text-anchor="end" fill="#8b8fa8" font-size="10">图2：竞价时间三段论</text>
+    </svg>
+</div>
+
+<div class="card">
+    <div class="badge-row"><span>⏱️ 时间框架</span><span>核心认知</span></div>
+    <h3>三段时间，三种可信度</h3>
     <table>
-        <tr><th>指标</th><th>含义</th><th>怎么看</th></tr>
+        <tr><th>时间段</th><th>规则</th><th>可信度</th><th>怎么看</th></tr>
         <tr>
-            <td><strong>撮合价</strong></td>
-            <td>当前时刻的集合竞价撮合价格</td>
-            <td>与昨收对比看方向；9:20-9:25之间看走势（持续走高=多头强，持续走低=空头强）</td>
+            <td><strong>9:15-9:20</strong></td>
+            <td>可以挂单，<span class="warn">可以撤单</span></td>
+            <td>⭐⭐ 低</td>
+            <td>看方向即可。涨停竞价、天量封单大概率是假的——主力挂大单营造假象，9:20前撤掉</td>
         </tr>
         <tr>
-            <td><strong>委比 / 委差</strong></td>
-            <td>委比=(买盘-卖盘)/(买盘+卖盘)；委差=买盘-卖盘</td>
-            <td>委比>+20%=真买盘堆积，<-20%=真卖盘堆积，接近0%=多空平衡</td>
+            <td><strong>9:20-9:25</strong></td>
+            <td>可以挂单，<span class="bull">不能撤单</span></td>
+            <td>⭐⭐⭐⭐⭐ 高</td>
+            <td>这才是真金白银的博弈。撮合价走势、委比委差都有参考价值</td>
         </tr>
         <tr>
-            <td><strong>撮合量</strong></td>
-            <td>参与竞价的委托总量</td>
-            <td>量大=参与度高，量小=观望；对比9:15和9:25的增量</td>
+            <td><strong>9:25</strong></td>
+            <td>出开盘价</td>
+            <td>⭐⭐⭐⭐⭐ 确定</td>
+            <td>最终裁判结果。对比9:20竞价价和9:25开盘价的差距，判断方向是否突变</td>
         </tr>
     </table>
 </div>
 
 <div class="principle">
-    <strong>🧠 核心认知：</strong>价格告诉你"多空在什么位置博弈"，委比告诉你"谁的力量更强"，成交量告诉你"有多少人在参与"。三个指标要一起看，不能只看价格。
+    <strong>🧠 关键认知：</strong>9:15-9:20的价格是「故事」——主力想让你看到的；9:20-9:25的价格是「事实」——主力真正在做的；9:25的开盘价是「判决」——博弈的最终结果。三个阶段的信息权重完全不同，不能一视同仁。
 </div>
 
 <!-- ============================================================ -->
-<h2>三、竞价快速判断口诀</h2>
+<!-- 第三章：竞价的核心指标 -->
+<!-- ============================================================ -->
+<h2>三、竞价看什么：三个核心指标</h2>
 
-<div class="insight-card">
-    <div class="tag-row"><span>实战口诀</span><span>快速判断</span></div>
-    <h3>六种典型竞价组合</h3>
+<p>竞价不是只看价格涨跌。价格只告诉你「在什么位置博弈」，<strong>委比</strong>告诉你「谁的力量更强」，<strong>成交量</strong>告诉你「有多少人参与」。</p>
+
+<!-- 委比委差图解 -->
+<h3>3.1 委比和委差——竞价最重要的指标</h3>
+
+<div class="chart-box">
+    <svg viewBox="0 0 720 280" width="720" height="280" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="280" rx="8" fill="#0d1117"/>
+
+        <!-- 标题 -->
+        <text x="360" y="28" text-anchor="middle" fill="#e1e4ea" font-size="14" font-weight="700">委比与委差：多空力量的天平</text>
+
+        <!-- 左边：买盘 -->
+        <rect x="30" y="50" width="300" height="60" rx="8" fill="#1a2a1a" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="180" y="75" text-anchor="middle" fill="#22c55e" font-size="14" font-weight="700">🟢 买盘合计 = 931手</text>
+        <text x="180" y="95" text-anchor="middle" fill="#8b8fa8" font-size="11">买一495手 + 买二436手</text>
+
+        <!-- 右边：卖盘 -->
+        <rect x="390" y="50" width="300" height="60" rx="8" fill="#2a1a1a" stroke="#f87171" stroke-width="1.5"/>
+        <text x="540" y="75" text-anchor="middle" fill="#f87171" font-size="14" font-weight="700">🔴 卖盘合计 = 495手</text>
+        <text x="540" y="95" text-anchor="middle" fill="#8b8fa8" font-size="11">卖一495手</text>
+
+        <!-- 公式 -->
+        <rect x="60" y="130" width="600" height="55" rx="8" fill="#1e2240" stroke="#4f8cff" stroke-width="1.5"/>
+        <text x="360" y="152" text-anchor="middle" fill="#4f8cff" font-size="13" font-weight="700">委差 = 买盘 − 卖盘 = 931 − 495 = +436手</text>
+        <text x="360" y="174" text-anchor="middle" fill="#4f8cff" font-size="13" font-weight="700">委比 = 委差 ÷ (买盘 + 卖盘) × 100% = 436 ÷ 1426 = +30.58%</text>
+
+        <!-- 解读 -->
+        <text x="360" y="210" text-anchor="middle" fill="#e1e4ea" font-size="12">委比为正 → 买盘多于卖盘 → 买方力量更强</text>
+        <text x="360" y="230" text-anchor="middle" fill="#e1e4ea" font-size="12">委比为负 → 卖盘多于买盘 → 卖方力量更强</text>
+
+        <!-- 刻度条 -->
+        <rect x="80" y="250" width="560" height="16" rx="8" fill="#2a1a1a"/>
+        <rect x="80" y="250" width="367" height="16" rx="8" fill="#1a3a2a"/>
+        <text x="80" y="265" fill="#22c55e" font-size="10" font-weight="700">买盘 65.3%</text>
+        <text x="600" y="265" text-anchor="end" fill="#f87171" font-size="10" font-weight="700">卖盘 34.7%</text>
+        <text x="360" y="280" text-anchor="middle" fill="#8b8fa8" font-size="10">图3：委比委差图解（以立昂微7月1日竞价为例）</text>
+    </svg>
+</div>
+
+<div class="step">
+    <h4>📊 委比快速判断表</h4>
+    <table>
+        <tr><th>委比范围</th><th>信号</th><th>含义</th></tr>
+        <tr><td><span class="bull">> +30%</span></td><td>🟢 买方强势</td><td>买盘远超卖盘，开盘大概率上涨</td></tr>
+        <tr><td><span class="bull">+10% ~ +30%</span></td><td>🟡 买方偏强</td><td>买盘多于卖盘，开盘偏乐观</td></tr>
+        <tr><td>-10% ~ +10%</td><td>⚪ 多空平衡</td><td>买卖力量相当，方向待定</td></tr>
+        <tr><td><span class="bear">-30% ~ -10%</span></td><td>🟡 卖方偏强</td><td>卖盘多于买盘，开盘偏悲观</td></tr>
+        <tr><td><span class="bear">< -30%</span></td><td>🔴 卖方强势</td><td>卖盘远超买盘，开盘大概率下跌</td></tr>
+    </table>
+</div>
+
+<div class="principle">
+    <strong>🧠 委比是竞价的「验真器」：</strong>价格涨但委比为负 → 涨得虚，开盘可能回落；价格平但委比为正 → 蓄力中，开盘可能拉升。委比比价格更诚实，因为它直接反映买卖力量的对比。
+</div>
+
+<!-- 三个指标综合 -->
+<h3>3.2 三指标综合判断</h3>
+
+<div class="card">
+    <div class="badge-row"><span>三要素</span><span>综合判断</span></div>
+    <h3>价格 + 委比 + 成交量 = 完整判断</h3>
     <table>
         <tr><th>价格</th><th>委比</th><th>成交量</th><th>信号</th><th>含义</th></tr>
         <tr>
-            <td class="price-up">涨 ↑</td>
-            <td>正 +</td>
-            <td>放大</td>
-            <td class="signal-bull">🟢 强势</td>
-            <td>真买盘推动价格上涨，开盘大概率延续强势</td>
+            <td class="up">涨 ↑</td><td>正 +</td><td>放大</td><td class="bull">🟢 真强势</td>
+            <td>买盘推动价格上涨，开盘大概率延续强势</td>
         </tr>
         <tr>
-            <td class="price-up">涨 ↑</td>
-            <td>负 -</td>
-            <td>放大</td>
-            <td class="signal-neut">🟡 分歧</td>
-            <td>价格虽涨但卖盘更大，开盘可能回落</td>
+            <td class="up">涨 ↑</td><td>负 -</td><td>放大</td><td class="warn">🟡 假强势</td>
+            <td>价格虽涨但卖盘更大，开盘可能回落（虚单）</td>
         </tr>
         <tr>
-            <td class="price-flat">平 →</td>
-            <td>正 +</td>
-            <td>小</td>
-            <td class="signal-bull">🟢 蓄力</td>
+            <td class="flat">平 →</td><td>正 +</td><td>小</td><td class="bull">🟢 蓄力中</td>
             <td>价格不动但买盘堆积，开盘后可能拉升</td>
         </tr>
         <tr>
-            <td class="price-flat">平 →</td>
-            <td>负 -</td>
-            <td>小</td>
-            <td class="signal-bear">🔴 蓄压</td>
+            <td class="flat">平 →</td><td>负 -</td><td>小</td><td class="bear">🔴 蓄压中</td>
             <td>价格不动但卖盘堆积，开盘后可能下跌</td>
         </tr>
         <tr>
-            <td class="price-down">跌 ↓</td>
-            <td>负 -</td>
-            <td>放大</td>
-            <td class="signal-bear">🔴 弱势</td>
-            <td>真卖盘推动价格下跌，开盘大概率延续弱势</td>
+            <td class="down">跌 ↓</td><td>负 -</td><td>放大</td><td class="bear">🔴 真弱势</td>
+            <td>卖盘推动价格下跌，开盘大概率延续弱势</td>
         </tr>
         <tr>
-            <td class="price-down">跌 ↓</td>
-            <td>正 +</td>
-            <td>小</td>
-            <td class="signal-neut">🟡 托底</td>
+            <td class="down">跌 ↓</td><td>正 +</td><td>小</td><td class="warn">🟡 有托底</td>
             <td>价格虽跌但有买盘托底，可能止跌</td>
         </tr>
     </table>
 </div>
 
-<div class="principle">
-    <strong>🧠 核心认知：</strong>价格涨不代表真的好，要看委比有没有配合。价格平不代表没方向，委比正=蓄力看涨，委比负=蓄力看跌。最后30秒的突变才是真方向！
+<!-- ============================================================ -->
+<!-- 第四章：竞价四种经典形态 -->
+<!-- ============================================================ -->
+<h2>四、竞价轨迹的四种经典形态</h2>
+
+<p>9:20-9:25之间，撮合价不是静止的——它在不断变动。这个变动轨迹本身就是信息。以下是四种最常见的竞价形态：</p>
+
+<!-- 形态1：稳步推升 -->
+<div class="chart-box">
+    <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="200" rx="8" fill="#0d1117"/>
+        <text x="360" y="22" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">形态一：稳步推升 → 🟢 真买盘</text>
+
+        <!-- 坐标轴 -->
+        <line x1="60" y1="40" x2="60" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+        <line x1="60" y1="165" x2="680" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+        <text x="50" y="45" fill="#8b8fa8" font-size="10">价</text>
+        <text x="670" y="180" fill="#8b8fa8" font-size="10">时间 →</text>
+
+        <!-- 价格曲线 -->
+        <polyline points="60,155 150,145 250,130 350,115 450,100 550,90 650,85"
+            fill="none" stroke="#f87171" stroke-width="3"/>
+
+        <!-- 标注 -->
+        <text x="200" y="80" fill="#22c55e" font-size="11">委比 > +20%</text>
+        <text x="450" y="78" fill="#e1e4ea" font-size="11">价格持续走高</text>
+        <text x="600" y="76" fill="#8b8fa8" font-size="10">图4</text>
+    </svg>
+    <div class="caption"><strong>特征：</strong>撮合价从低到高逐步抬升，委比持续为正。说明买方力量在增强，不断有人加价买入。<strong>开盘大概率高开高走。</strong></div>
+</div>
+
+<!-- 形态2：逐步下滑 -->
+<div class="chart-box">
+    <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="200" rx="8" fill="#0d1117"/>
+        <text x="360" y="22" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">形态二：逐步下滑 → 🔴 真卖盘</text>
+
+        <line x1="60" y1="40" x2="60" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+        <line x1="60" y1="165" x2="680" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+
+        <polyline points="60,85 150,95 250,110 350,120 450,135 550,145 650,155"
+            fill="none" stroke="#22c55e" stroke-width="3"/>
+
+        <text x="200" y="80" fill="#f87171" font-size="11">委比 < -20%</text>
+        <text x="450" y="85" fill="#e1e4ea" font-size="11">价格持续走低</text>
+        <text x="600" y="70" fill="#8b8fa8" font-size="10">图5</text>
+    </svg>
+    <div class="caption"><strong>特征：</strong>撮合价从高到低逐步下滑，委比持续为负。说明卖方力量在增强，不断有人压价卖出。<strong>开盘大概率低开低走。</strong></div>
+</div>
+
+<!-- 形态3：高位跳水 -->
+<div class="chart-box">
+    <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="200" rx="8" fill="#0d1117"/>
+        <text x="360" y="22" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">形态三：高位跳水 → ⚠️ 竞价虚单（斯达半导）</text>
+
+        <line x1="60" y1="40" x2="60" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+        <line x1="60" y1="165" x2="680" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+
+        <!-- 虚线标注9:20 -->
+        <line x1="350" y1="45" x2="350" y2="160" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="350" y="42" text-anchor="middle" fill="#fbbf24" font-size="10">9:20</text>
+
+        <!-- 9:15-9:20 高位 -->
+        <polyline points="60,80 120,75 180,78 240,82 300,85 350,88"
+            fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="180" y="68" fill="#fbbf24" font-size="10">假单区域（可撤单）</text>
+
+        <!-- 9:20后跳水 -->
+        <polyline points="350,88 420,100 500,120 580,135 650,145"
+            fill="none" stroke="#22c55e" stroke-width="3"/>
+        <text x="500" y="105" fill="#22c55e" font-size="11">撤单后跳水</text>
+        <text x="620" y="158" fill="#8b8fa8" font-size="10">图6</text>
+    </svg>
+    <div class="caption"><strong>特征：</strong>9:15-9:20价格在高位（甚至涨停附近），但9:20后价格跳水。因为9:20前的高位挂单是假单，9:20前撤掉了。<strong>委比通常接近0或不配合。</strong></div>
+</div>
+
+<!-- 形态4：最后砸盘 -->
+<div class="chart-box">
+    <svg viewBox="0 0 720 200" width="720" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="200" rx="8" fill="#0d1117"/>
+        <text x="360" y="22" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">形态四：尾段砸盘 → 🔴 最后突变（京东方A）</text>
+
+        <line x1="60" y1="40" x2="60" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+        <line x1="60" y1="165" x2="680" y2="165" stroke="#2a2d3a" stroke-width="1"/>
+
+        <!-- 虚线标注9:24:30 -->
+        <line x1="600" y1="45" x2="600" y2="160" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="600" y="42" text-anchor="middle" fill="#fbbf24" font-size="10">9:24:50</text>
+
+        <!-- 前期平稳 -->
+        <polyline points="60,110 150,108 250,112 350,110 450,108 550,112 600,115"
+            fill="none" stroke="#e1e4ea" stroke-width="2"/>
+
+        <!-- 最后砸盘 -->
+        <polyline points="600,115 620,130 650,155 670,160"
+            fill="none" stroke="#22c55e" stroke-width="3"/>
+        <text x="640" y="128" fill="#22c55e" font-size="11">大单砸出！</text>
+        <text x="680" y="180" text-anchor="end" fill="#8b8fa8" font-size="10">图7</text>
+    </svg>
+    <div class="caption"><strong>特征：</strong>9:20-9:24期间价格稳定，但9:24:50-9:25:00最后10秒突然有大单砸出，开盘价大幅低于竞价价。<strong>开盘量大=真砸盘，量小=可能是假摔。</strong></div>
 </div>
 
 <!-- ============================================================ -->
-<h2>四、竞价分析四步法</h2>
+<!-- 第五章：竞价分析四步法 -->
+<!-- ============================================================ -->
+<h2>五、竞价分析四步法（每日操作清单）</h2>
 
-<div class="step-box">
-    <h4>🕘 每天9:15-9:25，按这个顺序看</h4>
+<div class="chart-box">
+    <svg viewBox="0 0 720 320" width="720" height="320" xmlns="http://www.w3.org/2000/svg">
+        <rect width="720" height="320" rx="8" fill="#0d1117"/>
+        <text x="360" y="25" text-anchor="middle" fill="#e1e4ea" font-size="14" font-weight="700">竞价四步法流程图</text>
 
-    <table>
-        <tr><th>步骤</th><th>时间</th><th>看什么</th><th>怎么判断</th></tr>
-        <tr>
-            <td><strong>① 定方向</strong></td>
-            <td>9:15</td>
-            <td>竞价第一笔撮合价</td>
-            <td>高于昨收=偏多，低于昨收=偏空。但注意：这个阶段可以撤单，方向参考即可</td>
-        </tr>
-        <tr>
-            <td><strong>② 辨真假</strong></td>
-            <td>9:20</td>
-            <td>委比、委差</td>
-            <td>委比>+20%=真买盘；<-20%=真卖盘；接近0=博弈中。这是最关键的一步</td>
-        </tr>
-        <tr>
-            <td><strong>③ 看趋势</strong></td>
-            <td>9:20-9:25</td>
-            <td>撮合价变化轨迹</td>
-            <td>价格持续走高=多头渐强；持续走低=空头渐强；横盘=力量均衡。最后30秒突变最关键</td>
-        </tr>
-        <tr>
-            <td><strong>④ 定结果</strong></td>
-            <td>9:25</td>
-            <td>开盘价 + 开盘量</td>
-            <td>开盘价vs9:20竞价价差距大=方向突变；开盘量大=多空激烈；开盘量小=方向待定</td>
-        </tr>
-    </table>
+        <!-- 步骤1 -->
+        <rect x="40" y="45" width="140" height="90" rx="10" fill="#1e2240" stroke="#4f8cff" stroke-width="2"/>
+        <text x="110" y="72" text-anchor="middle" fill="#4f8cff" font-size="22">①</text>
+        <text x="110" y="95" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">定方向</text>
+        <text x="110" y="115" text-anchor="middle" fill="#8b8fa8" font-size="10">9:15 第一笔撮合价</text>
+        <text x="110" y="130" text-anchor="middle" fill="#8b8fa8" font-size="10">高=偏多 低=偏空</text>
+
+        <line x1="180" y1="90" x2="210" y2="90" stroke="#4f8cff" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+        <!-- 步骤2 -->
+        <rect x="210" y="45" width="140" height="90" rx="10" fill="#1e2240" stroke="#34d399" stroke-width="2"/>
+        <text x="280" y="72" text-anchor="middle" fill="#34d399" font-size="22">②</text>
+        <text x="280" y="95" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">辨真假</text>
+        <text x="280" y="115" text-anchor="middle" fill="#8b8fa8" font-size="10">9:20 委比委差</text>
+        <text x="280" y="130" text-anchor="middle" fill="#8b8fa8" font-size="10">正=真买 负=真卖</text>
+
+        <line x1="350" y1="90" x2="380" y2="90" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+        <!-- 步骤3 -->
+        <rect x="380" y="45" width="140" height="90" rx="10" fill="#1e2240" stroke="#fbbf24" stroke-width="2"/>
+        <text x="450" y="72" text-anchor="middle" fill="#fbbf24" font-size="22">③</text>
+        <text x="450" y="95" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">看趋势</text>
+        <text x="450" y="115" text-anchor="middle" fill="#8b8fa8" font-size="10">9:20-9:25 轨迹</text>
+        <text x="450" y="130" text-anchor="middle" fill="#8b8fa8" font-size="10">走高=多强 走低=空强</text>
+
+        <line x1="520" y1="90" x2="550" y2="90" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowYellow)"/>
+
+        <!-- 步骤4 -->
+        <rect x="550" y="45" width="140" height="90" rx="10" fill="#1e2240" stroke="#f87171" stroke-width="2"/>
+        <text x="620" y="72" text-anchor="middle" fill="#f87171" font-size="22">④</text>
+        <text x="620" y="95" text-anchor="middle" fill="#e1e4ea" font-size="13" font-weight="700">定结果</text>
+        <text x="620" y="115" text-anchor="middle" fill="#8b8fa8" font-size="10">9:25 开盘价+量</text>
+        <text x="620" y="130" text-anchor="middle" fill="#8b8fa8" font-size="10">对比竞价=方向确认</text>
+
+        <!-- 下方详细说明 -->
+        <rect x="40" y="160" width="650" height="145" rx="8" fill="#1a1d27" stroke="#2a2d3a" stroke-width="1"/>
+
+        <!-- 四列详细 -->
+        <text x="110" y="185" text-anchor="middle" fill="#4f8cff" font-size="11" font-weight="700">高于昨收 = 偏多</text>
+        <text x="110" y="205" text-anchor="middle" fill="#8b8fa8" font-size="10">低于昨收 = 偏空</text>
+        <text x="110" y="225" text-anchor="middle" fill="#8b8fa8" font-size="10">平开 = 中性</text>
+        <text x="110" y="250" text-anchor="middle" fill="#8b8fa8" font-size="10">⚠️ 此阶段可撤单</text>
+        <text x="110" y="270" text-anchor="middle" fill="#8b8fa8" font-size="10">方向参考即可</text>
+
+        <text x="280" y="185" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">> +20% = 真买盘</text>
+        <text x="280" y="205" text-anchor="middle" fill="#8b8fa8" font-size="10">< -20% = 真卖盘</text>
+        <text x="280" y="225" text-anchor="middle" fill="#8b8fa8" font-size="10">接近0 = 多空平衡</text>
+        <text x="280" y="250" text-anchor="middle" fill="#8b8fa8" font-size="10">🔒 此阶段不能撤单</text>
+        <text x="280" y="270" text-anchor="middle" fill="#8b8fa8" font-size="10">最关键的一步！</text>
+
+        <text x="450" y="185" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700">持续走高 = 多头渐强</text>
+        <text x="450" y="205" text-anchor="middle" fill="#8b8fa8" font-size="10">持续走低 = 空头渐强</text>
+        <text x="450" y="225" text-anchor="middle" fill="#8b8fa8" font-size="10">横盘 = 力量均衡</text>
+        <text x="450" y="250" text-anchor="middle" fill="#8b8fa8" font-size="10">最后30秒突变</text>
+        <text x="450" y="270" text-anchor="middle" fill="#8b8fa8" font-size="10">= 多空决出胜负</text>
+
+        <text x="620" y="185" text-anchor="middle" fill="#f87171" font-size="11" font-weight="700">开盘vs竞价差距大</text>
+        <text x="620" y="205" text-anchor="middle" fill="#8b8fa8" font-size="10">= 方向突变</text>
+        <text x="620" y="225" text-anchor="middle" fill="#8b8fa8" font-size="10">开盘量大 = 激烈博弈</text>
+        <text x="620" y="250" text-anchor="middle" fill="#8b8fa8" font-size="10">开盘量小 = 方向待定</text>
+        <text x="620" y="270" text-anchor="middle" fill="#8b8fa8" font-size="10">最终裁判结果</text>
+
+        <!-- 箭头定义 -->
+        <defs>
+            <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#4f8cff"/>
+            </marker>
+            <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+            </marker>
+            <marker id="arrowYellow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/>
+            </marker>
+        </defs>
+        <text x="680" y="315" text-anchor="end" fill="#8b8fa8" font-size="10">图8：竞价四步法</text>
+    </svg>
 </div>
 
 <!-- ============================================================ -->
-<h2>五、四只持仓实战案例拆解（2026年7月1日）</h2>
+<!-- 第六章：实战案例 -->
+<!-- ============================================================ -->
+<h2>六、四只持仓实战案例拆解（2026年7月1日）</h2>
 
-<!-- --- 案例1：斯达半导 --- -->
-<h3>🔥 案例1：斯达半导 —— 「竞价虚单」教科书</h3>
+<!-- 案例1 -->
+<h3>🔥 案例1：斯达半导 603290 —— 「竞价虚单」教科书</h3>
 
-<div class="case-card red">
-    <h4>竞价轨迹</h4>
+<div class="case red">
+    <h4>完整竞价轨迹</h4>
     <div class="timeline">
-        <div class="timeline-item fake">
-            <span class="koudai">9:15:26</span> 撮合价 <strong>168.00</strong>（+9.90%）← 冲涨停！好猛？
+        <div class="tl-item tl-fake">
+            <strong>9:15:26</strong> · 撮合价 <span class="up">168.00（+9.90%）</span> · 557手<br>
+            <span class="warn">冲涨停！看起来非常强势——但这是可撤单阶段</span>
         </div>
-        <div class="timeline-item fake">
-            <span class="koudai">9:15:47</span> 撮合价 <strong>166.67</strong>（+8.98%）← 开始下滑
+        <div class="tl-item tl-fake">
+            <strong>9:15:32-9:15:41</strong> · 撮合价 <span class="up">167.00</span> · 533手<br>
+            价格开始下滑，成交量也在减少
         </div>
-        <div class="timeline-item real">
-            <span class="koudai">9:20后</span> 撮合价 <strong>166.67</strong> · 委比 <strong>-0.11%</strong> · 委差 <strong>-1手</strong>
+        <div class="tl-item tl-fake">
+            <strong>9:15:47-9:15:53</strong> · 撮合价 <span class="up">166.67（+8.98%）</span> · 531手<br>
+            在这个位置企稳了
         </div>
-        <div class="timeline-item result">
-            <span class="koudai">9:25开盘</span> <strong>155.00</strong>（+1.35%）← 🚨 开盘大幅低于竞价！
+        <div class="tl-item tl-real">
+            <strong>9:20后</strong> · 撮合价 <span class="up">166.67</span><br>
+            ⚠️ <strong>委比 -0.11% · 委差仅 -1手</strong><br>
+            买卖力量完全对等！+8.98%的涨幅却没有一边倒的买盘支撑——<strong>这是关键疑点</strong>
+        </div>
+        <div class="tl-item tl-result">
+            <strong>9:25 开盘</strong> · <span class="up">155.00（+1.35%）</span><br>
+            🚨 开盘价大幅低于竞价价！从+8.98%跌到+1.35%
         </div>
     </div>
 
     <h4>拆解分析</h4>
     <ul>
-        <li><strong>9:15-9:20：</strong>冲到168（涨停附近），但这是可撤单阶段，<strong>很可能是假单</strong></li>
-        <li><strong>9:20后：</strong>价格稳在166.67，<strong>但委比-0.11%、委差仅-1手</strong>——买卖力量完全对等，没有一边倒的买盘在顶竞价。如果真有+8.98%的真实买盘，委比至少应该+30%以上</li>
-        <li><strong>9:25开盘：</strong>155.00，仅+1.35%。<strong>真相大白</strong>——竞价高位单在9:20前撤掉了大部分</li>
+        <li><strong>为什么是虚单？</strong>9:15冲到涨停附近（+9.9%），但9:20不可撤单后委比只有-0.11%。<strong>真正强势的竞价，价格涨的同时委比必须大幅为正。</strong>委比接近0说明买卖力量相等，高位价格是靠假单撑起来的。</li>
+        <li><strong>假单怎么操作的？</strong>主力在9:15-9:20挂大量高价买单，制造「抢筹」假象。散户看到竞价涨停，跟风挂单。主力在9:19:50左右撤掉自己的大单，留下散户的单子。9:20后撤不掉，但已经不够维持高价。</li>
+        <li><strong>怎么看出来的？</strong>价格从168→166.67持续下滑 + 委比接近0 + 成交量递减 = 没有增量买盘在顶竞价。</li>
     </ul>
 
     <div class="principle">
-        <strong>🧠 教训：</strong>高位竞价（+8%以上）+ 委比不配合（接近0）= 虚单概率大。真正的强势竞价，价格涨的同时委比一定大幅为正。委比是验真器。
+        <strong>🧠 教训：</strong>高位竞价（+5%以上）+ 委比不配合（接近0或为负）= 虚单概率极大。委比是竞价的验真器——价格可以骗人，委比骗不了人。
     </div>
 </div>
 
-<!-- --- 案例2：立昂微 --- -->
-<h3>🟢 案例2：立昂微 —— 「压价吸筹」教科书</h3>
+<!-- 案例2 -->
+<h3>🟢 案例2：立昂微 605358 —— 「压价吸筹」教科书</h3>
 
-<div class="case-card green">
-    <h4>竞价数据</h4>
+<div class="case green">
+    <h4>竞价数据一览</h4>
     <table>
-        <tr><td>竞价全程撮合价</td><td><strong>77.61</strong>（昨收77.60，+0.01%）</td></tr>
-        <tr><td>价格走势</td><td>全程一字横盘，纹丝不动</td></tr>
-        <tr><td>委比</td><td class="signal-bull"><strong>+30.58%</strong></td></tr>
+        <tr><td>竞价全程撮合价</td><td><strong>77.61</strong>（昨收77.60，<span class="flat">+0.01%</span>）——全程一字横盘</td></tr>
+        <tr><td>委比</td><td class="bull"><strong>+30.58%</strong></td></tr>
         <tr><td>委差</td><td><strong>+436手</strong></td></tr>
-        <tr><td>买盘</td><td>495 + 436 = <strong>931手</strong></td></tr>
-        <tr><td>卖盘</td><td><strong>495手</strong></td></tr>
-        <tr><td>9:25开盘</td><td><strong>77.61</strong>（与竞价一致）</td></tr>
+        <tr><td>买一</td><td>77.61 × 495手</td></tr>
+        <tr><td>买二</td><td>77.61 × 436手</td></tr>
+        <tr><td>卖一</td><td>77.61 × 495手</td></tr>
+        <tr><td>买盘合计</td><td class="bull"><strong>931手</strong></td></tr>
+        <tr><td>卖盘合计</td><td>495手</td></tr>
+        <tr><td>9:25开盘</td><td><strong>77.61</strong>（与竞价完全一致）</td></tr>
     </table>
 
     <h4>拆解分析</h4>
     <ul>
-        <li>价格完全平开，但<strong>委比+30.58%</strong>！下方有436手买盘在排队等货</li>
-        <li>卖方只有495手，买方却有931手，<strong>买方力量几乎是卖方的2倍</strong></li>
-        <li>为什么价格不涨？因为卖方不降价，买方也不追高——双方在77.61形成僵持</li>
-        <li>这叫「压价吸筹」：<strong>主力悄悄堆积买单，但不主动推高价格</strong></li>
-        <li>当天立昂微涨价10-15%正式生效，委比+30%说明有资金提前埋伏</li>
+        <li><strong>为什么价格不动？</strong>卖方挂495手在77.61，买方也不愿意出更高价。双方在77.61形成僵持。</li>
+        <li><strong>为什么是看涨信号？</strong>虽然价格不动，但买盘（931手）几乎是卖盘（495手）的<strong>2倍</strong>。下面有436手买盘在排队等货，只是卖方不降价。</li>
+        <li><strong>为什么叫「压价吸筹」？</strong>主力把买单挂在77.61而不是77.62，不想推高价格暴露意图。但如果有人愿意在77.61卖，他们照单全收。这是在「悄悄进货」。</li>
+        <li><strong>催化剂：</strong>7月1日立昂微硅片涨价10-15%正式生效，委比+30%说明有资金提前埋伏。</li>
     </ul>
 
     <div class="principle">
-        <strong>🧠 教训：</strong>价格不动不代表没方向！价格平 + 委比大幅为正 = 买盘蓄力，开盘后大概率拉升。价格平 + 委比大幅为负 = 卖盘蓄力，开盘后大概率下跌。委比比价格更诚实。
+        <strong>🧠 教训：</strong>价格平开不代表没方向。价格平 + 委比大幅为正 = 买盘在蓄力，开盘后大概率拉升。价格平 + 委比大幅为负 = 卖盘在蓄力，开盘后大概率下跌。委比比价格更诚实。
     </div>
 </div>
 
-<!-- --- 案例3：京东方A --- -->
-<h3>🔴 案例3：京东方A —— 「竞价最后砸盘」教科书</h3>
+<!-- 案例3 -->
+<h3>🔴 案例3：京东方A 000725 —— 「最后砸盘」教科书</h3>
 
-<div class="case-card red">
+<div class="case red">
     <h4>竞价轨迹</h4>
     <div class="timeline">
-        <div class="timeline-item real">
-            <span class="koudai">9:23</span> 撮合价 <strong>8.70</strong>（+0.23%）· 委比 <strong>+7.01%</strong>
+        <div class="tl-item tl-real">
+            <strong>9:23</strong> · 撮合价 <span class="up">8.70（+0.23%）</span><br>
+            委比 +7.01% · 买方略强 · 一切正常
         </div>
-        <div class="timeline-item real">
-            <span class="koudai">9:24:50-9:25:00</span> <strong>最后10秒大单砸出！</strong>撮合价从8.70→8.49
+        <div class="tl-item tl-real">
+            <strong>9:24:50-9:25:00</strong> · <span class="bear">🚨 最后10秒突变！</span><br>
+            大单砸出，撮合价从8.70 → 8.49
         </div>
-        <div class="timeline-item result">
-            <span class="koudai">9:25开盘</span> <strong>8.49</strong>（<span class="price-down">-2.19%</span>）· 开盘量 <strong>82万手</strong>
+        <div class="tl-item tl-result">
+            <strong>9:25 开盘</strong> · <span class="down">8.49（-2.19%）</span> · 开盘量82万手（约7亿）<br>
+            量大 = 真实砸盘，不是假动作
         </div>
     </div>
 
     <h4>拆解分析</h4>
     <ul>
-        <li>9:23之前一切正常：+0.23%红盘，委比+7%买方略强</li>
-        <li><strong>9:24:50-9:25:00最后10秒突变！</strong>大单砸出，开盘价从8.70砸到8.49</li>
-        <li>开盘量82万手（约7亿元），量大——<strong>是真实砸盘，不是假动作</strong></li>
-        <li>背景：京东方A六连阳累涨+42%，获利盘在竞价最后时刻集中出货</li>
+        <li><strong>竞价前段一切正常：</strong>9:23还是+0.23%红盘，委比+7%买方略强。如果只看9:23的数据，会以为今天是平开或微红。</li>
+        <li><strong>最后10秒突变：</strong>有人在9:24:50开始大量挂出卖单，而且挂的价格越来越低。由于不可撤单，这些卖单是真实的。</li>
+        <li><strong>为什么是真实砸盘？</strong>开盘量82万手（约7亿元），量大。如果是假动作，不会用这么大的量。</li>
+        <li><strong>背景：</strong>京东方A六连阳累涨+42%，大量获利盘在竞价最后时刻集中出货——先观望到最后一刻，确认没人拉就砸。</li>
     </ul>
 
     <div class="principle">
-        <strong>🧠 教训：</strong>竞价最后30秒的突变，才是多空对决的真正结果。前面9:15-9:24的价格都可能被推翻。开盘量大+价格跳水=真实砸盘，开盘量小+价格跳水=可能是假摔。
+        <strong>🧠 教训：</strong>竞价最后30秒（9:24:30-9:25:00）的突变，才是多空对决的真正结果。前面9:15-9:24的价格都可能被推翻。开盘量大+价格跳水=真实砸盘；开盘量小+价格跳水=可能是假摔。
     </div>
 </div>
 
-<!-- --- 案例4：圣晖集成 --- -->
-<h3>⚪ 案例4：圣晖集成 —— 「试砸被拉回」教科书</h3>
+<!-- 案例4 -->
+<h3>⚪ 案例4：圣晖集成 603163 —— 「试砸被拉回」教科书</h3>
 
-<div class="case-card gray">
+<div class="case gray">
     <h4>竞价轨迹</h4>
     <div class="timeline">
-        <div class="timeline-item fake">
-            <span class="koudai">9:15:06</span> 撮合价 <strong>146.50</strong>
+        <div class="tl-item tl-fake">
+            <strong>9:15:06</strong> · 撮合价 <strong>146.50</strong>
         </div>
-        <div class="timeline-item fake">
-            <span class="koudai">9:15:09</span> 撮合价 <strong>143.00</strong>（<span class="price-down">-2.39%</span>）← 有人用31手试砸！
+        <div class="tl-item tl-fake">
+            <strong>9:15:09</strong> · 撮合价 <span class="down">143.00（-2.39%）</span> · 31手<br>
+            ⚠️ 有人试探性砸盘！
         </div>
-        <div class="timeline-item fake">
-            <span class="koudai">9:15:12</span> 撮合价 <strong>146.50</strong>（<span class="price-up">+2.39%</span>）← 瞬间拉回！57手
+        <div class="tl-item tl-fake">
+            <strong>9:15:12</strong> · 撮合价 <span class="up">146.50（+2.39%）</span> · 57手<br>
+            ✅ 仅3秒！瞬间被拉回！
         </div>
-        <div class="timeline-item real">
-            <span class="koudai">9:15-9:25</span> 全程稳在146.50 · 委比 <strong>+2.06%</strong>
+        <div class="tl-item tl-real">
+            <strong>9:15:15-9:25</strong> · 全程稳在146.50 · 委比+2.06%<br>
+            成交量很小（95手），参与度低
         </div>
-        <div class="timeline-item result">
-            <span class="koudai">9:25开盘</span> <strong>148.00</strong>（+1.02%）← 最后有资金推了一把
+        <div class="tl-item tl-result">
+            <strong>9:25 开盘</strong> · <span class="up">148.00（+1.02%）</span><br>
+            最后有资金推了一把，略超预期
         </div>
     </div>
 
     <h4>拆解分析</h4>
     <ul>
-        <li>9:15:09有人用143.00试探性砸了31手，<strong>但3秒内被57手拉回146.50</strong></li>
-        <li>试砸被秒拉回 = <strong>下方有资金护盘</strong>，不是真砸盘</li>
-        <li>成交量很小（仅95手），竞价参与度低——主力没有大动作</li>
-        <li>开盘148.00（+1.02%），略超预期，说明最后有资金推了一把</li>
+        <li><strong>试砸是什么？</strong>有人用143.00砸了31手，想试探下方有没有支撑。如果没人接，价格会继续跌，说明支撑薄弱。</li>
+        <li><strong>秒拉回说明什么？</strong>3秒内被57手拉回146.50，说明<strong>下方有资金在护盘</strong>。试砸失败。</li>
+        <li><strong>成交量小说明什么？</strong>竞价全程只有95手参与，说明主力没有大动作，处于观望状态。</li>
+        <li><strong>开盘148.00：</strong>略超预期，最后有资金推了一把。但开盘后迅速回落，说明上方追涨意愿也不强。</li>
     </ul>
 
     <div class="principle">
-        <strong>🧠 教训：</strong>竞价中出现突然跳水但被瞬间拉回 = 下方有支撑，不是真砸盘。试砸被秒拉回说明有资金在防守。如果跳水后没有拉回，而是持续走低，那才是真砸盘。
+        <strong>🧠 教训：</strong>竞价中出现突然跳水但被瞬间拉回 = 下方有支撑，不是真砸盘。如果跳水后没有拉回，而是持续走低，那才是真砸盘。试砸是测试支撑的探针——能不能秒回，决定了下方有没有防守。
     </div>
 </div>
 
 <!-- ============================================================ -->
-<h2>六、四个案例综合对比</h2>
+<!-- 第七章：四个案例综合对比 -->
+<!-- ============================================================ -->
+<h2>七、四个案例综合对比</h2>
 
-<div class="insight-card">
-    <h3>2026年7月1日竞价复盘总表</h3>
+<div class="card">
+    <div class="badge-row"><span>案例对比</span><span>2026年7月1日</span></div>
+    <h3>四种竞价形态一览</h3>
     <table>
-        <tr><th>股票</th><th>9:20竞价</th><th>委比</th><th>9:25开盘</th><th>竞价类型</th><th>学到的</th></tr>
+        <tr><th>股票</th><th>9:20竞价</th><th>委比</th><th>9:25开盘</th><th>形态类型</th><th>学到的</th></tr>
         <tr>
             <td>斯达半导</td>
-            <td class="price-up">+8.98%</td>
-            <td>-0.11%</td>
-            <td class="price-up">+1.35%</td>
-            <td>竞价虚单</td>
-            <td>高位竞价+委比不配合=假强势</td>
+            <td class="up">+8.98%</td>
+            <td class="flat">-0.11%</td>
+            <td class="up">+1.35%</td>
+            <td>高位跳水 → 虚单</td>
+            <td>高位竞价 + 委比不配合 = 假强势</td>
         </tr>
         <tr>
             <td>立昂微</td>
-            <td class="price-flat">+0.01%</td>
-            <td class="signal-bull">+30.58%</td>
-            <td class="price-flat">+0.01%</td>
+            <td class="flat">+0.01%</td>
+            <td class="bull">+30.58%</td>
+            <td class="flat">+0.01%</td>
             <td>压价吸筹</td>
-            <td>价格不动+委比正=真蓄力</td>
+            <td>价格不动 + 委比正 = 真蓄力</td>
         </tr>
         <tr>
             <td>京东方A</td>
-            <td class="price-up">+0.23%</td>
-            <td>+7.01%</td>
-            <td class="price-down">-2.19%</td>
-            <td>最后砸盘</td>
+            <td class="up">+0.23%</td>
+            <td class="flat">+7.01%</td>
+            <td class="down">-2.19%</td>
+            <td>尾段砸盘</td>
             <td>最后30秒定胜负</td>
         </tr>
         <tr>
             <td>圣晖集成</td>
-            <td class="price-flat">0.00%</td>
-            <td>+2.06%</td>
-            <td class="price-up">+1.02%</td>
+            <td class="flat">0.00%</td>
+            <td class="flat">+2.06%</td>
+            <td class="up">+1.02%</td>
             <td>试砸拉回</td>
-            <td>竞价跳水秒回=有支撑</td>
+            <td>竞价跳水秒回 = 有支撑</td>
         </tr>
     </table>
 </div>
 
 <!-- ============================================================ -->
-<h2>七、总结：竞价看盘检查清单</h2>
+<!-- 第八章：每日检查清单 -->
+<!-- ============================================================ -->
+<h2>八、每日竞价检查清单</h2>
 
-<div class="insight-card">
-    <div class="tag-row"><span>检查清单</span><span>每日必看</span></div>
-    <h3>每天9:15-9:25，逐项检查</h3>
-    <table>
+<div class="card">
+    <div class="badge-row"><span>检查清单</span><span>打印贴在屏幕旁</span></div>
+    <h3>每天9:15-9:25，逐项打勾</h3>
+    <table class="checklist">
         <tr><th>#</th><th>检查项</th><th>时间</th><th>判断标准</th></tr>
-        <tr><td>1</td><td>竞价方向</td><td>9:15</td><td>高于昨收=偏多，低于=偏空（参考即可）</td></tr>
-        <tr><td>2</td><td>委比验真</td><td>9:20</td><td>>+20%=真买盘，<-20%=真卖盘，接近0=博弈</td></tr>
-        <tr><td>3</td><td>竞价走势</td><td>9:20-9:25</td><td>持续走高=多头强，持续走低=空头强</td></tr>
-        <tr><td>4</td><td>最后30秒</td><td>9:24:30</td><td>是否有突变？有=多空方向可能有变</td></tr>
-        <tr><td>5</td><td>开盘确认</td><td>9:25</td><td>开盘价vs9:20竞价差距大=方向突变；开盘量大=多空激烈</td></tr>
+        <tr>
+            <td>1</td>
+            <td>竞价方向</td>
+            <td>9:15</td>
+            <td>高于昨收=偏多，低于=偏空。⚠️此阶段可撤单，方向仅作参考</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>委比验真</td>
+            <td>9:20</td>
+            <td>>+20%=真买盘，<-20%=真卖盘，接近0=多空博弈中。<strong>这是最关键的一步！</strong></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>竞价走势</td>
+            <td>9:20-9:25</td>
+            <td>持续走高=多头渐强；持续走低=空头渐强；横盘=力量均衡</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>最后30秒</td>
+            <td>9:24:30</td>
+            <td>是否有突变？价格跳水/拉升？量大还是量小？</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>开盘确认</td>
+            <td>9:25</td>
+            <td>开盘价vs9:20竞价价：差距大=方向突变；开盘量大=多空激烈</td>
+        </tr>
     </table>
 </div>
 
-<div class="principle">
-    <strong>🧠 最终心法：</strong>竞价看三样——价格、委比、成交量。价格涨+委比正+量放大=真强势；价格涨+委比负=虚单；价格平+委比正=蓄力；最后30秒突变=真方向。9:15-9:20的涨跌假动作多，9:20后的委比才是真金白银。
+<!-- ============================================================ -->
+<!-- 第九章：常见误区 -->
+<!-- ============================================================ -->
+<h2>九、新手常见竞价误区</h2>
+
+<div class="card">
+    <h3>❌ 五个最常见的错误</h3>
+    <table>
+        <tr><th>误区</th><th>为什么错</th><th>正确做法</th></tr>
+        <tr>
+            <td>看到9:15涨停就激动</td>
+            <td>9:15-9:20可以撤单，涨停竞价大概率是假单</td>
+            <td>等9:20后看委比，委比不配合就是虚的</td>
+        </tr>
+        <tr>
+            <td>只看价格不看委比</td>
+            <td>价格可以靠假单撑，委比是真金白银的对比</td>
+            <td>价格和委比必须一起看，委比是验真器</td>
+        </tr>
+        <tr>
+            <td>竞价平开就忽略</td>
+            <td>价格平+委比正=蓄力看涨；价格平+委比负=蓄力看跌</td>
+            <td>平开更要看委比，方向藏在委比里</td>
+        </tr>
+        <tr>
+            <td>9:24看完就关了</td>
+            <td>最后30秒是最容易突变的时间段</td>
+            <td>盯到9:25出开盘价再下判断</td>
+        </tr>
+        <tr>
+            <td>竞价弱=全天弱</td>
+            <td>竞价只反映开盘瞬间的多空博弈，不代表全天</td>
+            <td>竞价是参考，9:30正式交易后才是主战场</td>
+        </tr>
+    </table>
 </div>
 
-<div class="highlight-box">
-    <p><strong>竞价不是用来"预测"开盘价的，是用来"理解"多空博弈的。</strong></p>
-    <p>看懂竞价，就能在9:30正式交易前，比只看K线的人多10分钟的信息优势。</p>
-    <p>这10分钟，往往就是认知差距。</p>
+<!-- ============================================================ -->
+<!-- 总结 -->
+<!-- ============================================================ -->
+<h2>十、总结</h2>
+
+<div class="card">
+    <div class="badge-row"><span>核心心法</span><span>打印贴在屏幕旁</span></div>
+    <h3>竞价看三样：价格、委比、成交量</h3>
+
+    <table>
+        <tr><th>维度</th><th>告诉你的</th><th>怎么用</th></tr>
+        <tr>
+            <td><strong>价格</strong></td>
+            <td>多空在什么位置博弈</td>
+            <td>高于昨收=偏多，低于=偏空；看9:20-9:25走势判断多空强弱</td>
+        </tr>
+        <tr>
+            <td><strong>委比</strong></td>
+            <td>多空谁的力量更强</td>
+            <td>正=买方强，负=卖方强。委比是验真器，价格可以骗人，委比骗不了</td>
+        </tr>
+        <tr>
+            <td><strong>成交量</strong></td>
+            <td>有多少人在参与</td>
+            <td>量大=参与度高，博弈激烈；量小=观望，方向待定</td>
+        </tr>
+    </table>
+
+    <div style="margin-top:16px;">
+        <div class="principle">
+            <strong>🧠 终极心法：</strong>竞价不是用来「预测」开盘价的，是用来「理解」多空博弈的。看懂竞价，你就能在9:30正式交易前，比只看K线的人多10分钟的信息优势。这10分钟，往往就是认知差距。
+        </div>
+    </div>
+
+    <div style="margin-top:16px;">
+        <div class="principle">
+            <strong>🎯 记住四个关键数字：</strong><br>
+            9:15 — 看方向（可撤单，别信价格）<br>
+            9:20 — 看委比（不可撤单，真金白银）<br>
+            9:24:30 — 盯最后30秒（突变定胜负）<br>
+            9:25 — 看开盘价（最终裁判）
+        </div>
+    </div>
+</div>
+
+<!-- 术语速查 -->
+<h2>附：竞价术语速查表</h2>
+
+<div class="card">
+    <div class="badge-row"><span>术语表</span><span>速查</span></div>
+    <div>
+        <span class="term"><strong>撮合价</strong>：当前时刻集合竞价的参考价格</span>
+        <span class="term"><strong>开盘价</strong>：9:25最终确定的成交价</span>
+        <span class="term"><strong>委比</strong>：(买盘-卖盘)/(买盘+卖盘)×100%</span>
+        <span class="term"><strong>委差</strong>：买盘合计 - 卖盘合计</span>
+        <span class="term"><strong>量比</strong>：今日成交量/近5日同时段均值</span>
+        <span class="term"><strong>换手率</strong>：成交量/流通股本×100%</span>
+        <span class="term"><strong>外盘</strong>：以卖价成交的量（主动买入）</span>
+        <span class="term"><strong>内盘</strong>：以买价成交的量（主动卖出）</span>
+        <span class="term"><strong>涨停价</strong>：昨收×1.10（主板）</span>
+        <span class="term"><strong>跌停价</strong>：昨收×0.90（主板）</span>
+    </div>
 </div>
 
 <div class="data-source">
